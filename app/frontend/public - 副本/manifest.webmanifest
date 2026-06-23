@@ -1,0 +1,29 @@
+{
+  "name": "\u5C0F\u897F\u561B\u7684\u5947\u5E7B\u5192\u9669",
+  "short_name": "\u5C0F\u897F\u561B\u5192\u9669",
+  "description": "\u5C0F\u897F\u561B\u7684\u5947\u5E7B\u5192\u9669\u6E38\u620F\uff0c\u53EF\u5B89\u88C5\u5230\u624B\u673A\u684C\u9762\u4F7F\u7528\u3002",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f0d4",
+  "theme_color": "#f5d65f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
