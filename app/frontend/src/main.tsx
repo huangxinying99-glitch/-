@@ -3,16 +3,13 @@ import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
 
-const APP_CACHE_VERSION = '2026-06-23-2';
+const APP_CACHE_VERSION = '2026-06-23-3';
 
 async function purgeLegacyBrowserData() {
   try {
     const versionKey = 'xiaoxixi-app-cache-version';
-    const reloadKey = 'xiaoxixi-app-cache-reload';
     const previousVersion = window.localStorage.getItem(versionKey);
-    const alreadyReloaded = window.sessionStorage.getItem(reloadKey) === APP_CACHE_VERSION;
-    if (alreadyReloaded) {
-      window.sessionStorage.removeItem(reloadKey);
+    if (previousVersion === APP_CACHE_VERSION) {
       return;
     }
 
@@ -29,9 +26,6 @@ async function purgeLegacyBrowserData() {
     }
 
     window.localStorage.setItem(versionKey, APP_CACHE_VERSION);
-    window.sessionStorage.setItem(reloadKey, APP_CACHE_VERSION);
-    window.location.reload();
-    return;
   } catch (error) {
     console.warn('Legacy cache purge skipped:', error);
   }

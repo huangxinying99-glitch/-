@@ -2286,7 +2286,6 @@ export default function Game() {
   const level2StartTimeRef = useRef(0);
   const level3SubWorldStartTimeRef = useRef(0);
   const level3SubWorldMoleSpawnRef = useRef(0);
-  const level1RecoveryRef = useRef({ lastX: 0, lastY: 0, lastMoveTime: 0 });
   // Ref to track current level for game-over restart (avoids stale closure)
   const currentLevelRef = useRef(0);
   useEffect(() => {
@@ -2298,13 +2297,6 @@ export default function Game() {
     if (gameState.currentLevel === 2 && !gameState.inSubWorld) {
       level3SubWorldStartTimeRef.current = 0;
       level3SubWorldMoleSpawnRef.current = 0;
-    }
-    if (gameState.currentLevel === 0) {
-      level1RecoveryRef.current = {
-        lastX: gameState.player.x,
-        lastY: gameState.player.y,
-        lastMoveTime: Date.now(),
-      };
     }
   }, [gameState.currentLevel]);
   const gameOverRef = useRef(false);
@@ -2506,18 +2498,6 @@ export default function Game() {
       const isJump = keys.current['ArrowUp'] || keys.current['KeyW'] || keys.current['Space'] || touchState.current['jump'];
       const isDown = keys.current['ArrowDown'] || keys.current['KeyS'] || touchState.current['down'];
       const isAttack = keys.current['KeyF'] || touchState.current['attack'];
-
-      if (prev.currentLevel === 0) {
-        const moved = Math.abs(player.x - level1RecoveryRef.current.lastX) > 1 || Math.abs(player.y - level1RecoveryRef.current.lastY) > 1;
-        if (moved) {
-          level1RecoveryRef.current.lastX = player.x;
-          level1RecoveryRef.current.lastY = player.y;
-          level1RecoveryRef.current.lastMoveTime = now;
-        } else if ((isLeft || isRight || isJump || isAttack) && now - level1RecoveryRef.current.lastMoveTime > 1400) {
-          resetGameRef.current(0);
-          return prev;
-        }
-      }
 
       // Vine climbing
       const vines = _vines;
