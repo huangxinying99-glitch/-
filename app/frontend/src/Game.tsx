@@ -2282,6 +2282,18 @@ export default function Game() {
     }
   }, [gameState.gameWon]);
 
+  useEffect(() => {
+    if (!gameState.gameWon) return;
+    if (gameState.currentLevel === LEVELS.length - 1) return;
+    if (levelTransition?.active) return;
+
+    const timer = window.setTimeout(() => {
+      startLevelTransition(gameState.currentLevel, gameState.currentLevel + 1);
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [gameState.gameWon, gameState.currentLevel, levelTransition?.active]);
+
   // Ref to track when Level 2 is entered (for bird immediate appearance)
   const level2StartTimeRef = useRef(0);
   const level3SubWorldStartTimeRef = useRef(0);
