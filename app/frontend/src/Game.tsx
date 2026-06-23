@@ -14,6 +14,11 @@ import {
 import { Entity, GameState, Projectile } from './types';
 import { useGameLoop } from './hooks/useGameLoop';
 
+function assetUrl(path: string) {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base.replace(/\/?$/, '/')}${path.replace(/^\/+/, '')}`;
+}
+
 // 鈹€鈹€鈹€ Helper Functions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 function createPlayer(level: string[]): Entity {
@@ -1713,205 +1718,205 @@ export default function Game() {
 
   useEffect(() => {
     const img1 = new Image();
-    img1.src = '/little tomato.png';
+    img1.src = assetUrl('little tomato.png');
     littleTomatoImg.current = img1;
     const img2 = new Image();
-    img2.src = '/monster1.png';
+    img2.src = assetUrl('monster1.png');
     monster1Img.current = img2;
     const img3 = new Image();
-    img3.src = '/flower.png';
+    img3.src = assetUrl('flower.png');
     flowerImg.current = img3;
     const img4 = new Image();
-    img4.src = '/flowers.png';
+    img4.src = assetUrl('flowers.png');
     flowersImg.current = img4;
     const img5 = new Image();
-    img5.src = '/pipe.png';
+    img5.src = assetUrl('pipe.png');
     pipeImg.current = img5;
     const img6 = new Image();
-    img6.src = '/rabbit.png';
+    img6.src = assetUrl('rabbit.png');
     rabbitImg.current = img6;
     const img7 = new Image();
-    img7.src = '/seed.png';
+    img7.src = assetUrl('seed.png');
     seedImg.current = img7;
     const img7b = new Image();
-    img7b.src = '/real-mushroom.png';
+    img7b.src = assetUrl('real-mushroom.png');
     mushroomImg.current = img7b;
     const img7c = new Image();
-    img7c.src = '/carrot.png';
+    img7c.src = assetUrl('carrot.png');
     carrotImg.current = img7c;
     const img7d = new Image();
-    img7d.src = '/pipe.png';
+    img7d.src = assetUrl('pipe.png');
     arrowImg.current = img7d;
     const img8 = new Image();
-    img8.src = '/frog.png';
+    img8.src = assetUrl('frog.png');
     frogImg.current = img8;
     const img9 = new Image();
-    img9.src = '/snail.png';
+    img9.src = assetUrl('snail.png');
     snailImg.current = img9;
     const img10 = new Image();
-    img10.src = '/mountain.png';
+    img10.src = assetUrl('mountain.png');
     mountainImg.current = img10;
     const img11 = new Image();
-    img11.src = '/tree.png';
+    img11.src = assetUrl('tree.png');
     treeImg.current = img11;
     const img12 = new Image();
-    img12.src = '/homepage-cloud.png';
+    img12.src = assetUrl('homepage-cloud.png');
     cloudImg.current = img12;
     const img13 = new Image();
-    img13.src = '/pira.png';
+    img13.src = assetUrl('pira.png');
     piraImg.current = img13;
     const img14 = new Image();
-    img14.src = '/pira-close.png';
+    img14.src = assetUrl('pira-close.png');
     piraCloseImg.current = img14;
     const img15 = new Image();
-    img15.src = '/tree2.png';
+    img15.src = assetUrl('tree2.png');
     tree2Img.current = img15;
     const img16 = new Image();
-    img16.src = '/grass.png';
+    img16.src = assetUrl('grass.png');
     grassImg.current = img16;
     const img17 = new Image();
-    img17.src = '/land.png';
+    img17.src = assetUrl('land.png');
     landImg.current = img17;
     const img18 = new Image();
-    img18.src = '/pond.png';
+    img18.src = assetUrl('pond.png');
     pondImg.current = img18;
     const img19 = new Image();
-    img19.src = '/water.png';
+    img19.src = assetUrl('water.png');
     waterImg.current = img19;
     const img20 = new Image();
-    img20.src = '/assets/slope-big.png';
+    img20.src = assetUrl('assets/slope-big.png');
     slopeImg.current = img20;
     const imgSlopeLeft = new Image();
-    imgSlopeLeft.src = '/assets/slope_left.png';
+    imgSlopeLeft.src = assetUrl('assets/slope_left.png');
     slopeLeftImg.current = imgSlopeLeft;
     const imgSlopeRight = new Image();
-    imgSlopeRight.src = '/assets/slope_right.png';
+    imgSlopeRight.src = assetUrl('assets/slope_right.png');
     slopeRightImg.current = imgSlopeRight;
     const imgGrass3 = new Image();
-    imgGrass3.src = '/assets/grass3.png';
+    imgGrass3.src = assetUrl('assets/grass3.png');
     grass3Img.current = imgGrass3;
     const img21 = new Image();
-    img21.src = '/sun.png';
+    img21.src = assetUrl('sun.png');
     sunImg.current = img21;
     const imgSun1 = new Image();
-    imgSun1.src = '/sun1.png';
+    imgSun1.src = assetUrl('sun1.png');
     sun1Img.current = imgSun1;
     const imgSun2 = new Image();
-    imgSun2.src = '/sun2.png';
+    imgSun2.src = assetUrl('sun2.png');
     sun2Img.current = imgSun2;
     const imgMoon = new Image();
-    imgMoon.src = '/moon.png';
+    imgMoon.src = assetUrl('moon.png');
     moonImg.current = imgMoon;
     const img22 = new Image();
-    img22.src = '/big-flower.png';
+    img22.src = assetUrl('big-flower.png');
     bigFlowerImg.current = img22;
     const img25 = new Image();
-    img25.src = '/assets/pea1.png';
+    img25.src = assetUrl('assets/pea1.png');
     pea1Img.current = img25;
     const img26 = new Image();
-    img26.src = '/assets/pea2.png';
+    img26.src = assetUrl('assets/pea2.png');
     pea2Img.current = img26;
     const img27 = new Image();
-    img27.src = '/assets/pea3.png';
+    img27.src = assetUrl('assets/pea3.png');
     pea3Img.current = img27;
     const imgPopcorn = new Image();
-    imgPopcorn.src = '/popcorn.png';
+    imgPopcorn.src = assetUrl('popcorn.png');
     popcornImg.current = imgPopcorn;
     const imgCoin = new Image();
-    imgCoin.src = '/coin.png';
+    imgCoin.src = assetUrl('coin.png');
     coinImg.current = imgCoin;
     const imgCoinAlt = new Image();
-    imgCoinAlt.src = '/coin-1.png';
+    imgCoinAlt.src = assetUrl('coin-1.png');
     coinAltImg.current = imgCoinAlt;
     const img28 = new Image();
-    img28.src = '/assets/level1-bg.jpg';
+    img28.src = assetUrl('assets/level1-bg.jpg');
     dawnBgImg.current = img28;
 
     const img29 = new Image();
-    img29.src = '/assets/05.jpg';
+    img29.src = assetUrl('assets/05.jpg');
     level5BgImg.current = img29;
 
     const img30 = new Image();
-    img30.src = '/assets/cave.png';
+    img30.src = assetUrl('assets/cave.png');
     caveImg.current = img30;
 
     const img31 = new Image();
-    img31.src = '/assets/bat.png';
+    img31.src = assetUrl('assets/bat.png');
     batImg.current = img31;
     const img33 = new Image();
-    img33.src = '/assets/egg.png';
+    img33.src = assetUrl('assets/egg.png');
     eggImg.current = img33;
     const img34 = new Image();
-    img34.src = '/assets/pinwheel-1.png';
+    img34.src = assetUrl('assets/pinwheel-1.png');
     pinwheel1Img.current = img34;
     const img35 = new Image();
-    img35.src = '/assets/pinwheel-2.png';
+    img35.src = assetUrl('assets/pinwheel-2.png');
     pinwheel2Img.current = img35;
     const img36a = new Image();
-    img36a.src = '/assets/9-background.png';
+    img36a.src = assetUrl('assets/9-background.png');
     level9BgImg.current = img36a;
     const img36 = new Image();
-    img36.src = '/assets/10.jpg';
+    img36.src = assetUrl('assets/10.jpg');
     level10BgImg.current = img36;
     const img37 = new Image();
-    img37.src = '/assets/b-cloud.png';
+    img37.src = assetUrl('assets/b-cloud.png');
     bCloudImg.current = img37;
     const img38 = new Image();
-    img38.src = '/assets/b-cloud2.png';
+    img38.src = assetUrl('assets/b-cloud2.png');
     bCloud2Img.current = img38;
     const imgLadybug = new Image();
-    imgLadybug.src = '/assets/ladybug.png';
+    imgLadybug.src = assetUrl('assets/ladybug.png');
     ladybugImg.current = imgLadybug;
     const imgLadybugBody = new Image();
-    imgLadybugBody.src = '/assets/ladybug-body.png';
+    imgLadybugBody.src = assetUrl('assets/ladybug-body.png');
     ladybugBodyImg.current = imgLadybugBody;
     const imgLadybugFly = new Image();
-    imgLadybugFly.src = '/assets/ladybug-fly.png';
+    imgLadybugFly.src = assetUrl('assets/ladybug-fly.png');
     ladybugFlyImg.current = imgLadybugFly;
     const imgLadybugWing = new Image();
-    imgLadybugWing.src = '/assets/ladybug-wing.png';
+    imgLadybugWing.src = assetUrl('assets/ladybug-wing.png');
     ladybugWingImg.current = imgLadybugWing;
     const imgBirdDeco = new Image();
-    imgBirdDeco.src = '/assets/bird.png';
+    imgBirdDeco.src = assetUrl('assets/bird.png');
     birdDecoImg.current = imgBirdDeco;
     const imgOwl = new Image();
-    imgOwl.src = '/assets/owl.png';
+    imgOwl.src = assetUrl('assets/owl.png');
     owlImg.current = imgOwl;
     const imgOwlWingL = new Image();
-    imgOwlWingL.src = '/assets/owl-wing-l.png';
+    imgOwlWingL.src = assetUrl('assets/owl-wing-l.png');
     owlWingLImg.current = imgOwlWingL;
     const imgOwlWingR = new Image();
-    imgOwlWingR.src = '/assets/owl-wing-r.png';
+    imgOwlWingR.src = assetUrl('assets/owl-wing-r.png');
     owlWingRImg.current = imgOwlWingR;
     const imgLawn = new Image();
-    imgLawn.src = '/assets/lawn.png';
+    imgLawn.src = assetUrl('assets/lawn.png');
     lawnImg.current = imgLawn;
     const imgLawnFlower = new Image();
-    imgLawnFlower.src = '/assets/lawn-1.png';
+    imgLawnFlower.src = assetUrl('assets/lawn-1.png');
     lawnFlowerImg.current = imgLawnFlower;
     const imgBigFlowerBlue = new Image();
-    imgBigFlowerBlue.src = '/assets/big-flower-blue.png';
+    imgBigFlowerBlue.src = assetUrl('assets/big-flower-blue.png');
     bigFlowerBlueImg.current = imgBigFlowerBlue;
     const imgBigFlowerYellow = new Image();
-    imgBigFlowerYellow.src = '/assets/big-flower-yellow.png';
+    imgBigFlowerYellow.src = assetUrl('assets/big-flower-yellow.png');
     bigFlowerYellowImg.current = imgBigFlowerYellow;
     const imgBigFlowerRed = new Image();
-    imgBigFlowerRed.src = '/assets/big-flower-red.png';
+    imgBigFlowerRed.src = assetUrl('assets/big-flower-red.png');
     bigFlowerRedImg.current = imgBigFlowerRed;
     const imgThorns = new Image();
-    imgThorns.src = '/thorns.png';
+    imgThorns.src = assetUrl('thorns.png');
     thornsImg.current = imgThorns;
     const imgSubTomato = new Image();
-    imgSubTomato.src = '/assets/sub-tomato.png';
+    imgSubTomato.src = assetUrl('assets/sub-tomato.png');
     subTomatoImg.current = imgSubTomato;
     const imgBBg = new Image();
-    imgBBg.src = '/assets/b-background.png';
+    imgBBg.src = assetUrl('assets/b-background.png');
     bBackgroundImg.current = imgBBg;
     const imgBBgFront = new Image();
-    imgBBgFront.src = '/assets/b-background-1.png';
+    imgBBgFront.src = assetUrl('assets/b-background-1.png');
     bBackgroundFrontImg.current = imgBBgFront;
     const imgStar = new Image();
-    imgStar.src = '/assets/star.png';
+    imgStar.src = assetUrl('assets/star.png');
     starImg.current = imgStar;
   }, []);
 
@@ -5399,7 +5404,7 @@ export default function Game() {
                 {/* Coins */}
                 {/* Coins */}
                 <div className="flex items-center gap-2 px-3 py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                  <img src="/coin.png" alt="" className="w-7 h-7 object-contain" />
+                  <img src={assetUrl('coin.png')} alt="" className="w-7 h-7 object-contain" />
                   <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 {/* Stars - yellow five-pointed star, clickable for exchange */}
@@ -5408,7 +5413,7 @@ export default function Game() {
                   style={{ background: 'rgba(255,255,255,0.15)' }}
                   onClick={() => { if (gameState.stars >= 3) setShowStarExchange(true); }}
                 >
-                  <img src="/assets/star.png" alt="" className="w-7 h-7 object-contain drop-shadow-sm" />
+                  <img src={assetUrl('assets/star.png')} alt="" className="w-7 h-7 object-contain drop-shadow-sm" />
                   <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
                 </button>
               </div>
@@ -5559,7 +5564,7 @@ export default function Game() {
         {!gameState.gameStarted && (
           <div className="absolute inset-0 flex items-center justify-center z-50 overflow-hidden">
             {/* 鑳屾櫙锟?*/}
-            <img src="/Main-Menu2.jpg" className="absolute inset-0 w-full h-full object-cover" alt="" />
+            <img src={assetUrl('Main-Menu2.jpg')} className="absolute inset-0 w-full h-full object-cover" alt="" />
 
             {/* 浜戞湹 - CSS drawn */}
             <div className="absolute top-[5%] left-[8%] w-[16%] aspect-[2.5/1] opacity-90 animate-cloud-sway-1 z-10">
@@ -5702,14 +5707,14 @@ export default function Game() {
 
             {/* 右侧叶子 */}
             <img
-              src="/homepage-leaves-1.png"
+              src={assetUrl('homepage-leaves-1.png')}
               className="absolute z-30 animate-leaf-sway-right"
               style={{ right: '-5%', bottom: '-18%', width: '37%', transformOrigin: 'bottom right' }}
               alt=""
             />
             {/* 左侧叶子 */}
             <img
-              src="/homepage-leaves-2.png"
+              src={assetUrl('homepage-leaves-2.png')}
               className="absolute z-30 animate-leaf-sway-left"
               style={{ left: '-5%', bottom: '-18%', width: '37%', transformOrigin: 'bottom left' }}
               alt=""
@@ -5718,7 +5723,7 @@ export default function Game() {
             {/* 小西红柿 - 更大更靠近按键 */}
             <div className="absolute bottom-[22%] left-1/2 -translate-x-1/2 z-20">
               <img
-                src="/homepage-tomato.png"
+                src={assetUrl('homepage-tomato.png')}
                 className="w-[373px] md:w-[480px] animate-tomato-bounce"
                 alt=""
               />
@@ -5731,14 +5736,14 @@ export default function Game() {
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src="/homepage-button1.png" className="w-[125px] h-[125px] md:w-[150px] md:h-[150px] object-contain drop-shadow-lg" alt="选择关卡" />
+                <img src={assetUrl('homepage-button1.png')} className="w-[125px] h-[125px] md:w-[150px] md:h-[150px] object-contain drop-shadow-lg" alt="选择关卡" />
               </button>
               {/* 开始游戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src="/homepage-button.png" className="h-[110px] md:h-[135px] object-contain drop-shadow-lg" alt="开始游戏" />
+                <img src={assetUrl('homepage-button.png')} className="h-[110px] md:h-[135px] object-contain drop-shadow-lg" alt="开始游戏" />
               </button>
             </div>
 
@@ -5835,7 +5840,7 @@ export default function Game() {
                 const delay = (i * 0.2) % 2;
                 const duration = 1.5 + (i % 4) * 0.4;
                 return (
-                  <img key={i} src="/assets/raindrop.png" alt="raindrop"
+                  <img key={i} src={assetUrl('assets/raindrop.png')} alt="raindrop"
                     style={{
                       position: 'absolute',
                       left: `${left}%`,
@@ -5850,15 +5855,15 @@ export default function Game() {
             </div>
             {/* B-clouds covering the top */}
             <div className="absolute top-0 left-0 right-0 pointer-events-none z-[2]" style={{ height: '18%' }}>
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[-10%] left-[-5%]" style={{ width: '35%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[-5%] left-[18%]" style={{ width: '30%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[-8%] left-[40%]" style={{ width: '32%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[-3%] left-[60%]" style={{ width: '28%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[-10%] left-[78%]" style={{ width: '30%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[5%] left-[5%]" style={{ width: '25%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[3%] left-[30%]" style={{ width: '28%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[8%] left-[55%]" style={{ width: '26%', opacity: 1 }} />
-              <img src="/assets/b-cloud.png" alt="cloud" className="absolute top-[6%] left-[80%]" style={{ width: '25%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-10%] left-[-5%]" style={{ width: '35%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-5%] left-[18%]" style={{ width: '30%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-8%] left-[40%]" style={{ width: '32%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-3%] left-[60%]" style={{ width: '28%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-10%] left-[78%]" style={{ width: '30%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[5%] left-[5%]" style={{ width: '25%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[3%] left-[30%]" style={{ width: '28%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[8%] left-[55%]" style={{ width: '26%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[6%] left-[80%]" style={{ width: '25%', opacity: 1 }} />
             </div>
 
             {/* Card content */}
@@ -5870,7 +5875,7 @@ export default function Game() {
               {/* Character */}
               <div className="relative mb-4">
                 <div className="w-20 h-20 flex items-center justify-center">
-                  <img src="/little tomato.png" alt="sad tomato" className="w-16 h-16 object-contain" style={{ filter: 'saturate(0.7) brightness(0.85)' }} />
+                  <img src={assetUrl('little tomato.png')} alt="sad tomato" className="w-16 h-16 object-contain" style={{ filter: 'saturate(0.7) brightness(0.85)' }} />
                 </div>
               </div>
               {/* Stats */}
@@ -5980,7 +5985,7 @@ export default function Game() {
                 <span className="font-bold text-2xl bg-clip-text text-transparent" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', backgroundImage: 'linear-gradient(135deg, #FFD700, #FF8C00, #FF4500)', WebkitBackgroundClip: 'text' }}>恭喜通关！</span>
               </div>
               <div className="mb-3">
-                <img src="/seed.png" alt="" className="w-12 h-12 object-contain animate-bounce" />
+                <img src={assetUrl('seed.png')} alt="" className="w-12 h-12 object-contain animate-bounce" />
               </div>
               <p className="text-amber-700 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>你是真正的冒险英雄！</p>
               <div className="flex justify-center gap-2 mb-3">
@@ -6052,7 +6057,7 @@ export default function Game() {
                 <span className="text-green-600 font-bold text-xl" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>恭喜过关！</span>
               </div>
               <div className="mb-3">
-                <img src="/seed.png" alt="" className="w-11 h-11 object-contain animate-bounce" />
+                <img src={assetUrl('seed.png')} alt="" className="w-11 h-11 object-contain animate-bounce" />
               </div>
               {/* Stars */}
               <div className="flex justify-center gap-3 mb-2">
