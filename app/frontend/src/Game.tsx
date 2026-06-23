@@ -5397,11 +5397,11 @@ export default function Game() {
       <div className={`relative overflow-hidden ${isFullscreen ? 'w-full h-full' : 'w-full max-w-[1920px] aspect-video rounded-3xl border-4 border-[#4a3a8a] shadow-[0_8px_32px_rgba(100,60,200,0.4),0_0_0_2px_rgba(255,255,255,0.15)_inset]'}`}>
         {/* HUD - Clean Simple Icon Style */}
         {gameState.gameStarted && !gameState.gameOver && !gameState.gameWon && (
-          <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="absolute top-3 left-3 right-3 z-40 pointer-events-none">
             {/* Top HUD Bar */}
-            <div className="flex items-center justify-between px-3 py-2 pointer-events-auto"
+            <div className="flex items-center justify-between px-3 py-2 pointer-events-auto rounded-2xl"
               style={{
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 80%, transparent 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 80%, rgba(0,0,0,0.08) 100%)',
               }}>
               {/* Left: Stats */}
               <div className="flex items-center gap-3">
@@ -5600,7 +5600,7 @@ export default function Game() {
               </div>
             </div>
 
-            <div className="absolute top-[3%] left-1/2 -translate-x-1/2 z-20 w-[64%] max-w-[920px]">
+            <div className="absolute top-[2%] left-1/2 -translate-x-1/2 z-20 w-[58%] max-w-[860px]">
               <img
                 src={assetUrl('assets/homepage-title.svg')}
                 alt="小西嘻的奇幻冒险"
@@ -5624,29 +5624,29 @@ export default function Game() {
             />
 
             {/* 小西红柿 - 更大更靠近按键 */}
-            <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 z-20">
+            <div className="absolute bottom-[21%] left-1/2 -translate-x-1/2 z-20">
               <img
                 src={assetUrl('homepage-tomato.png')}
-                className="w-[330px] md:w-[430px] animate-tomato-bounce"
+                className="w-[360px] md:w-[460px] animate-tomato-bounce"
                 alt=""
               />
             </div>
 
             {/* 按钮区域 - 更大，更靠近 */}
-            <div className="absolute bottom-[5.5%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
+            <div className="absolute bottom-[7%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-5">
               {/* 选择关卡 */}
               <button
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button1.png')} className="w-[92px] h-[92px] md:w-[110px] md:h-[110px] object-contain drop-shadow-lg" alt="选择关卡" />
+                <img src={assetUrl('homepage-button1.png')} className="w-[104px] h-[104px] md:w-[124px] md:h-[124px] object-contain drop-shadow-lg" alt="选择关卡" />
               </button>
               {/* 开始游戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button.png')} className="h-[88px] md:h-[108px] object-contain drop-shadow-lg" alt="开始游戏" />
+                <img src={assetUrl('homepage-button.png')} className="h-[104px] md:h-[128px] object-contain drop-shadow-lg" alt="开始游戏" />
               </button>
             </div>
 
