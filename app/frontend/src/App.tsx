@@ -2,6 +2,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
+import { getBasePath } from './lib/base-path';
 
 const AppRoutes = () => (
   <Routes>
@@ -12,7 +13,7 @@ const AppRoutes = () => (
 const App = () => (
   <TooltipProvider>
     <Toaster />
-    <BrowserRouter>
+    <BrowserRouter basename={getBasePath()}>
       <AppRoutes />
     </BrowserRouter>
   </TooltipProvider>
