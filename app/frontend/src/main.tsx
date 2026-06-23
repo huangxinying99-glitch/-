@@ -3,24 +3,32 @@ import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
 
-function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) {
-    return;
-  }
+const APP_CACHE_VERSION = '2026-06-23-1';
 
-  window.addEventListener('load', () => {
-    if (import.meta.env.DEV) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        registrations.forEach((registration) => registration.unregister());
-      });
-      caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+async function purgeLegacyBrowserData() {
+  try {
+    const versionKey = 'xiaoxixi-app-cache-version';
+    const previousVersion = window.localStorage.getItem(versionKey);
+    if (previousVersion === APP_CACHE_VERSION) {
       return;
     }
 
-    navigator.serviceWorker.register('./sw.js').catch((error) => {
-      console.warn('Service worker registration failed:', error);
-    });
-  });
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        registrations.map((registration) => registration.unregister())
+      );
+    }
+
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+
+    window.localStorage.setItem(versionKey, APP_CACHE_VERSION);
+  } catch (error) {
+    console.warn('Legacy cache purge skipped:', error);
+  }
 }
 
 // Load runtime configuration before rendering the app
@@ -37,6 +45,7 @@ async function initializeApp() {
   }
 
   try {
+    await purgeLegacyBrowserData();
     await loadRuntimeConfig();
     console.log('Runtime configuration loaded successfully');
   } catch (error) {
@@ -48,7 +57,6 @@ async function initializeApp() {
 
   // Render the app
   createRoot(document.getElementById('root')!).render(<App />);
-  registerServiceWorker();
 }
 
 // Initialize the app
