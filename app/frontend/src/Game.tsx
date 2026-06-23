@@ -5563,8 +5563,8 @@ export default function Game() {
         {/* Start Screen - Homepage */}
         {!gameState.gameStarted && (
           <div className="absolute inset-0 flex items-center justify-center z-50 overflow-hidden">
-            {/* 鑳屾櫙锟?*/}
-            <img src={assetUrl('Main-Menu2.jpg')} className="absolute inset-0 w-full h-full object-cover" alt="" />
+            <img src={assetUrl('assets/homepage.jpg')} className="absolute inset-0 w-full h-full object-cover" alt="" />
+            <div className="absolute inset-0 border-[4px] border-[#2f1b53] rounded-[14px] pointer-events-none" />
 
             {/* 浜戞湹 - CSS drawn */}
             <div className="absolute top-[5%] left-[8%] w-[16%] aspect-[2.5/1] opacity-90 animate-cloud-sway-1 z-10">
@@ -5588,121 +5588,12 @@ export default function Game() {
               </div>
             </div>
 
-            {/* Logo - 3D文字 */}
-            <div className="absolute top-[5%] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center justify-center">
-              {/* 上层: 小西嘻 */}
-              <div className="flex items-center justify-center select-none" style={{ fontSize: 'clamp(74px, 18.6vw, 146px)', lineHeight: 1.1 }}>
-                {['小','西','嘻'].map((char, i) => {
-                  const colors = ['#ff6b9d','#ffa751','#ffe259'];
-                  const rotations = [-3, 2, -2];
-                  const thicknessColors = ['#e84d80','#e08830','#dbc830'];
-                  // White outline shadows - smooth rounded border around character
-                  const outlineR = 6; // outline radius in px
-                  const outlineSteps = 20;
-                  const whiteOutline = Array.from({length: outlineSteps}, (_, k) => {
-                    const angle = (k / outlineSteps) * Math.PI * 2;
-                    const ox = Math.round(Math.cos(angle) * outlineR * 10) / 10;
-                    const oy = Math.round(Math.sin(angle) * outlineR * 10) / 10;
-                    return `${ox}px ${oy}px 0 #fff`;
-                  }).join(',');
-                  // Additional inner outline for extra coverage
-                  const innerOutline = Array.from({length: 12}, (_, k) => {
-                    const angle = (k / 12) * Math.PI * 2;
-                    const ox = Math.round(Math.cos(angle) * 4 * 10) / 10;
-                    const oy = Math.round(Math.sin(angle) * 4 * 10) / 10;
-                    return `${ox}px ${oy}px 0 #fff`;
-                  }).join(',');
-                  // Generate thickness shadows starting from 1px (no gap between face and extrusion)
-                  const thickness = Array.from({length: 16}, (_, n) => {
-                    const y = n + 1;
-                    const offsets = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
-                    return offsets.map(ox => `${ox}px ${y}px 0 ${thicknessColors[i]}`);
-                  }).flat().join(',');
-                  // White outline around the 3D thickness sides
-                  const thicknessOutline = Array.from({length: 16}, (_, n) => {
-                    const y = n + 1;
-                    return [`-5px ${y}px 0 #fff`, `5px ${y}px 0 #fff`];
-                  }).flat().join(',');
-                  // Bottom cap white outline
-                  const bottomCap = Array.from({length: 11}, (_, k) => {
-                    const ox = k - 5;
-                    return `${ox}px 18px 0 #fff`;
-                  }).join(',');
-                  return (
-                    <span
-                      key={i}
-                      className="inline-block relative"
-                      style={{
-                        color: colors[i],
-                        transform: `rotate(${rotations[i]}deg)`,
-                        textShadow: `${whiteOutline}, ${innerOutline}, ${thicknessOutline}, ${bottomCap}, ${thickness}, 0 22px 8px rgba(0,0,0,0.2)`,
-                        paintOrder: 'stroke fill',
-                        WebkitTextStroke: '6px #fff',
-                        fontFamily: '"ZCOOL KuaiLe", "Rounded Mplus 1c", cursive',
-                        letterSpacing: '-2px',
-                      }}
-                    >
-                      {char}
-                    </span>
-                  );
-                })}
-              </div>
-              {/* 下层: 的奇幻冒险 */}
-              <div className="flex items-center justify-center select-none" style={{ fontSize: 'clamp(68px, 16vw, 132px)', lineHeight: 1.1, marginTop: '-8px' }}>
-                {['的','奇','幻','冒','险'].map((char, i) => {
-                  const colors = ['#7ed56f','#55c7e8','#a78bfa','#ff6b9d','#ffa751'];
-                  const rotations = [2, -2, 2, -2, 2];
-                  const thicknessColors = ['#5cb850','#3aadcc','#8a6ae0','#e84d80','#e08830'];
-                  // White outline shadows - smooth rounded border
-                  const outlineR = 5;
-                  const outlineSteps = 16;
-                  const whiteOutline = Array.from({length: outlineSteps}, (_, k) => {
-                    const angle = (k / outlineSteps) * Math.PI * 2;
-                    const ox = Math.round(Math.cos(angle) * outlineR * 10) / 10;
-                    const oy = Math.round(Math.sin(angle) * outlineR * 10) / 10;
-                    return `${ox}px ${oy}px 0 #fff`;
-                  }).join(',');
-                  const innerOutline = Array.from({length: 10}, (_, k) => {
-                    const angle = (k / 10) * Math.PI * 2;
-                    const ox = Math.round(Math.cos(angle) * 3 * 10) / 10;
-                    const oy = Math.round(Math.sin(angle) * 3 * 10) / 10;
-                    return `${ox}px ${oy}px 0 #fff`;
-                  }).join(',');
-                  // Generate thickness shadows starting from 1px with wide horizontal coverage
-                  const thickness = Array.from({length: 12}, (_, n) => {
-                    const y = n + 1;
-                    const offsets = [-3, -2, -1, 0, 1, 2, 3];
-                    return offsets.map(ox => `${ox}px ${y}px 0 ${thicknessColors[i]}`);
-                  }).flat().join(',');
-                  // White outline on thickness sides
-                  const thicknessOutline = Array.from({length: 12}, (_, n) => {
-                    const y = n + 1;
-                    return [`-4px ${y}px 0 #fff`, `4px ${y}px 0 #fff`];
-                  }).flat().join(',');
-                  // Bottom cap
-                  const bottomCap = Array.from({length: 9}, (_, k) => {
-                    const ox = k - 4;
-                    return `${ox}px 14px 0 #fff`;
-                  }).join(',');
-                  return (
-                    <span
-                      key={i}
-                      className="inline-block relative"
-                      style={{
-                        color: colors[i],
-                        transform: `rotate(${rotations[i]}deg)`,
-                        textShadow: `${whiteOutline}, ${innerOutline}, ${thicknessOutline}, ${bottomCap}, ${thickness}, 0 17px 6px rgba(0,0,0,0.2)`,
-                        paintOrder: 'stroke fill',
-                        WebkitTextStroke: '5px #fff',
-                        fontFamily: '"ZCOOL KuaiLe", "Rounded Mplus 1c", cursive',
-                        letterSpacing: '-1px',
-                      }}
-                    >
-                      {char}
-                    </span>
-                  );
-                })}
-              </div>
+            <div className="absolute top-[3%] left-1/2 -translate-x-1/2 z-20 w-[64%] max-w-[920px]">
+              <img
+                src={assetUrl('assets/homepage-title.svg')}
+                alt="小西嘻的奇幻冒险"
+                className="w-full h-auto object-contain"
+              />
             </div>
 
             {/* 右侧叶子 */}
@@ -5721,29 +5612,29 @@ export default function Game() {
             />
 
             {/* 小西红柿 - 更大更靠近按键 */}
-            <div className="absolute bottom-[22%] left-1/2 -translate-x-1/2 z-20">
+            <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 z-20">
               <img
                 src={assetUrl('homepage-tomato.png')}
-                className="w-[373px] md:w-[480px] animate-tomato-bounce"
+                className="w-[330px] md:w-[430px] animate-tomato-bounce"
                 alt=""
               />
             </div>
 
             {/* 按钮区域 - 更大，更靠近 */}
-            <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
+            <div className="absolute bottom-[5.5%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-4">
               {/* 选择关卡 */}
               <button
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button1.png')} className="w-[125px] h-[125px] md:w-[150px] md:h-[150px] object-contain drop-shadow-lg" alt="选择关卡" />
+                <img src={assetUrl('homepage-button1.png')} className="w-[92px] h-[92px] md:w-[110px] md:h-[110px] object-contain drop-shadow-lg" alt="选择关卡" />
               </button>
               {/* 开始游戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button.png')} className="h-[110px] md:h-[135px] object-contain drop-shadow-lg" alt="开始游戏" />
+                <img src={assetUrl('homepage-button.png')} className="h-[88px] md:h-[108px] object-contain drop-shadow-lg" alt="开始游戏" />
               </button>
             </div>
 
