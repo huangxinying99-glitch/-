@@ -5428,7 +5428,10 @@ export default function Game() {
       >
         {/* HUD - Clean Simple Icon Style */}
         {gameState.gameStarted && !gameState.gameOver && !gameState.gameWon && (
-          <div className="absolute left-2 right-2 md:left-3 md:right-3 z-40 pointer-events-none top-[clamp(220px,32vh,340px)] md:top-[clamp(220px,32vh,340px)]">
+          <div
+            className="absolute left-2 right-2 md:left-3 md:right-3 z-40 pointer-events-none"
+            style={{ top: 'max(10px, env(safe-area-inset-top))' }}
+          >
             {/* Top HUD Bar */}
             <div className="flex items-center justify-between px-2 py-1.5 md:px-3 md:py-2 pointer-events-auto rounded-2xl"
               style={{
@@ -5631,7 +5634,13 @@ export default function Game() {
               </div>
             </div>
 
-            <div className="absolute top-[7%] md:top-[5%] left-1/2 -translate-x-1/2 z-20 w-[72%] md:w-[58%] max-w-[860px]">
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-20"
+              style={{
+                top: 'clamp(10px, 3.5vh, 32px)',
+                width: 'min(54vw, 620px)',
+              }}
+            >
               <img
                 src={assetUrl('assets/homepage-title.svg')}
                 alt="小西嘻的奇幻冒险"
@@ -5643,41 +5652,58 @@ export default function Game() {
             <img
               src={assetUrl('homepage-leaves-1.png')}
               className="absolute z-30 animate-leaf-sway-right"
-              style={{ right: '-5%', bottom: '-12%', width: '30vw', maxWidth: '37%', transformOrigin: 'bottom right' }}
+              style={{ right: '-4%', bottom: '-10%', width: 'min(28vw, 360px)', transformOrigin: 'bottom right' }}
               alt=""
             />
             {/* 左侧叶子 */}
             <img
               src={assetUrl('homepage-leaves-2.png')}
               className="absolute z-30 animate-leaf-sway-left"
-              style={{ left: '-5%', bottom: '-12%', width: '30vw', maxWidth: '37%', transformOrigin: 'bottom left' }}
+              style={{ left: '-4%', bottom: '-10%', width: 'min(28vw, 360px)', transformOrigin: 'bottom left' }}
               alt=""
             />
 
             {/* 小西红柿 - 更大更靠近按键 */}
-            <div className="absolute bottom-[26%] md:bottom-[22%] left-1/2 -translate-x-1/2 z-20">
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-20"
+              style={{ bottom: 'clamp(112px, 18vh, 180px)' }}
+            >
               <img
                 src={assetUrl('homepage-tomato.png')}
-                className="w-[64vw] max-w-[373px] md:w-[480px] animate-tomato-bounce"
+                className="animate-tomato-bounce"
+                style={{ width: 'min(30vw, 340px)' }}
                 alt=""
               />
             </div>
 
             {/* 按钮区域 - 更大，更靠近 */}
-            <div className="absolute bottom-[11%] md:bottom-[5%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 md:gap-3">
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-40 flex items-center"
+              style={{ bottom: 'clamp(18px, 4vh, 42px)', gap: 'clamp(8px, 1.2vw, 14px)' }}
+            >
               {/* 选择关卡 */}
               <button
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button1.png')} className="w-[96px] h-[96px] md:w-[125px] md:h-[125px] object-contain drop-shadow-lg" alt="选择关卡" />
+                <img
+                  src={assetUrl('homepage-button1.png')}
+                  className="object-contain drop-shadow-lg"
+                  style={{ width: 'clamp(72px, 7vw, 110px)', height: 'clamp(72px, 7vw, 110px)' }}
+                  alt="选择关卡"
+                />
               </button>
               {/* 开始游戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button.png')} className="h-[90px] md:h-[110px] object-contain drop-shadow-lg" alt="开始游戏" />
+                <img
+                  src={assetUrl('homepage-button.png')}
+                  className="object-contain drop-shadow-lg"
+                  style={{ height: 'clamp(68px, 7.4vw, 102px)' }}
+                  alt="开始游戏"
+                />
               </button>
             </div>
 
