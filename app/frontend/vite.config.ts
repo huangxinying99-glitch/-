@@ -20,10 +20,16 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default {
+  base: './',
   resolve: {
     alias: {
       '@': path.resolve(rootDir, './src'),
     },
+  },
+  build: {
+    outDir: 'docs',
+    emptyOutDir: true,
+    assetsDir: 'assets',
   },
   server: {
     host: '0.0.0.0',

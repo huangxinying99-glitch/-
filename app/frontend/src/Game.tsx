@@ -1365,6 +1365,7 @@ export default function Game() {
   const bBackgroundImg = useRef<HTMLImageElement | null>(null);
   const bBackgroundFrontImg = useRef<HTMLImageElement | null>(null);
   const starImg = useRef<HTMLImageElement | null>(null);
+  const [isPortrait, setIsPortrait] = useState(false);
   // Level 10 lightning flash effect
   const lightningFlashRef = useRef<{ active: boolean; startTime: number; intensity: number }>({ active: false, startTime: 0, intensity: 0 });
   const lastThunderTimeRef = useRef<number>(0);
@@ -1918,6 +1919,20 @@ export default function Game() {
     const imgStar = new Image();
     imgStar.src = assetUrl('assets/star.png');
     starImg.current = imgStar;
+  }, []);
+
+  useEffect(() => {
+    const updateOrientation = () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      setIsPortrait(portrait);
+    };
+    updateOrientation();
+    window.addEventListener('resize', updateOrientation);
+    window.addEventListener('orientationchange', updateOrientation);
+    return () => {
+      window.removeEventListener('resize', updateOrientation);
+      window.removeEventListener('orientationchange', updateOrientation);
+    };
   }, []);
 
   const [gameState, setGameState] = useState<GameState>({
@@ -3762,7 +3777,7 @@ export default function Game() {
     });
   }, []);
 
-  useGameLoop(update, gameState.gameStarted && !gameState.gameOver && !gameState.gameWon);
+  useGameLoop(update, gameState.gameStarted && !gameState.gameOver && !gameState.gameWon && !isPortrait);
 
   // Death animation using a transparent overlay canvas
   const [deathAnimDone, setDeathAnimDone] = useState(false);
@@ -5393,64 +5408,80 @@ export default function Game() {
   const handlePointerUp = (key: string) => { touchState.current[key] = false; };
 
   return (
-    <div ref={gameContainerRef} className="relative w-full h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#1a1a3e] via-[#2d1b69] to-[#0f0f2a] overflow-hidden select-none">
-      <div className={`relative overflow-hidden ${isFullscreen ? 'w-full h-full' : 'w-full max-w-[1920px] aspect-video rounded-3xl border-4 border-[#4a3a8a] shadow-[0_8px_32px_rgba(100,60,200,0.4),0_0_0_2px_rgba(255,255,255,0.15)_inset]'}`}>
+    <div ref={gameContainerRef} className="fixed inset-0 w-screen h-screen overflow-hidden">
+      {isPortrait && (
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-[#fff8ef] text-center px-6">
+          <div className="max-w-sm">
+            <div className="text-5xl mb-4">↻</div>
+            <div className="text-2xl font-bold text-[#6b4b1f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
+              请横屏游玩
+            </div>
+            <div className="mt-3 text-base text-[#8b6b3f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
+              把手机横过来，游戏画面会正常显示
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`relative w-full h-full overflow-hidden bg-gradient-to-b from-[#1a1a3e] via-[#2d1b69] to-[#0f0f2a] select-none touch-none ${isPortrait ? 'hidden' : ''}`}
+      >
         {/* HUD - Clean Simple Icon Style */}
         {gameState.gameStarted && !gameState.gameOver && !gameState.gameWon && (
-          <div className="absolute top-3 left-3 right-3 z-40 pointer-events-none">
+          <div className="absolute left-2 right-2 md:left-3 md:right-3 z-40 pointer-events-none top-[clamp(220px,32vh,340px)] md:top-[clamp(220px,32vh,340px)]">
             {/* Top HUD Bar */}
-            <div className="flex items-center justify-between px-3 py-2 pointer-events-auto rounded-2xl"
+            <div className="flex items-center justify-between px-2 py-1.5 md:px-3 md:py-2 pointer-events-auto rounded-2xl"
               style={{
                 background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 80%, rgba(0,0,0,0.08) 100%)',
               }}>
               {/* Left: Stats */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 {/* Score - purple diamond icon */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <div className="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="md:w-7 md:h-7">
                     <path d="M12 2L20 12L12 22L4 12L12 2Z" fill="#a855f7" stroke="#7c3aed" strokeWidth="1.5"/>
                     <path d="M12 5L17 12L12 19L7 12L12 5Z" fill="#c084fc" opacity="0.5"/>
                   </svg>
-                  <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
+                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
                 </div>
                 {/* Coins */}
                 {/* Coins */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                  <img src={assetUrl('coin.png')} alt="" className="w-7 h-7 object-contain" />
-                  <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
+                <div className="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                  <img src={assetUrl('coin.png')} alt="" className="w-6 h-6 md:w-7 md:h-7 object-contain" />
+                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 {/* Stars - yellow five-pointed star, clickable for exchange */}
                 <button
-                  className={"flex items-center gap-2 px-3 py-2 rounded-full transition-all cursor-pointer " + (starPulseStart && Date.now() - starPulseStart < 5000 ? "animate-pulse ring-2 ring-yellow-300" : "") + (gameState.stars >= 3 ? " hover:bg-white/25" : " pointer-events-none")}
+                  className={"flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full transition-all cursor-pointer " + (starPulseStart && Date.now() - starPulseStart < 5000 ? "animate-pulse ring-2 ring-yellow-300" : "") + (gameState.stars >= 3 ? " hover:bg-white/25" : " pointer-events-none")}
                   style={{ background: 'rgba(255,255,255,0.15)' }}
                   onClick={() => { if (gameState.stars >= 3) setShowStarExchange(true); }}
                 >
-                  <img src={assetUrl('assets/star.png')} alt="" className="w-7 h-7 object-contain drop-shadow-sm" />
-                  <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
+                  <img src={assetUrl('assets/star.png')} alt="" className="w-6 h-6 md:w-7 md:h-7 object-contain drop-shadow-sm" />
+                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
                 </button>
               </div>
               {/* Center: Lives */}
-              <div className="flex items-center gap-1 px-3 py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <div className="flex items-center gap-1 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
                 {[...Array(3)].map((_, i) => (
-                  <span key={i} className={"text-2xl transition-all " + (i < gameState.lives ? "" : "opacity-30")} style={{ color: i < gameState.lives ? '#ff4444' : '#888' }}>♥</span>
+                  <span key={i} className={"text-lg md:text-2xl transition-all " + (i < gameState.lives ? "" : "opacity-30")} style={{ color: i < gameState.lives ? '#ff4444' : '#888' }}>♥</span>
                 ))}
               </div>
               {/* Right: Level + Settings */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2">
                 {/* Level indicator */}
-                <div className="flex items-center gap-1 px-3 py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                  <span className="text-white font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>关卡 {gameState.currentLevel + 1}/{LEVELS.length}</span>
+                <div className="flex items-center gap-1 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>关卡 {gameState.currentLevel + 1}/{LEVELS.length}</span>
                 </div>
                 <button
-                  className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                  className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
                   style={{ background: 'rgba(255,255,255,0.15)' }}
                   onClick={() => setShowSettingsPanel(prev => !prev)}
                   title="设置"
                 >
-                  <div className="flex flex-col items-center justify-center gap-[4px]">
-                    <div className="w-[6px] h-[6px] rounded-full bg-white"></div>
-                    <div className="w-[6px] h-[6px] rounded-full bg-white"></div>
-                    <div className="w-[6px] h-[6px] rounded-full bg-white"></div>
+                  <div className="flex flex-col items-center justify-center gap-[3px] md:gap-[4px]">
+                    <div className="w-[5px] h-[5px] md:w-[6px] md:h-[6px] rounded-full bg-white"></div>
+                    <div className="w-[5px] h-[5px] md:w-[6px] md:h-[6px] rounded-full bg-white"></div>
+                    <div className="w-[5px] h-[5px] md:w-[6px] md:h-[6px] rounded-full bg-white"></div>
                   </div>
                 </button>
               </div>
@@ -5575,7 +5606,7 @@ export default function Game() {
         {/* Start Screen - Homepage */}
         {!gameState.gameStarted && (
           <div className="absolute inset-0 flex items-center justify-center z-50 overflow-hidden">
-            <img src={assetUrl('assets/homepage.jpg')} className="absolute inset-0 w-full h-full object-cover" alt="" />
+            <img src={assetUrl('Main-Menu2.jpg')} className="absolute inset-0 w-full h-full object-cover" alt="" />
             <div className="absolute inset-0 border-[4px] border-[#2f1b53] rounded-[14px] pointer-events-none" />
 
             {/* 浜戞湹 - CSS drawn */}
@@ -5600,7 +5631,7 @@ export default function Game() {
               </div>
             </div>
 
-            <div className="absolute top-[2%] left-1/2 -translate-x-1/2 z-20 w-[58%] max-w-[860px]">
+            <div className="absolute top-[7%] md:top-[5%] left-1/2 -translate-x-1/2 z-20 w-[72%] md:w-[58%] max-w-[860px]">
               <img
                 src={assetUrl('assets/homepage-title.svg')}
                 alt="小西嘻的奇幻冒险"
@@ -5612,41 +5643,41 @@ export default function Game() {
             <img
               src={assetUrl('homepage-leaves-1.png')}
               className="absolute z-30 animate-leaf-sway-right"
-              style={{ right: '-5%', bottom: '-18%', width: '37%', transformOrigin: 'bottom right' }}
+              style={{ right: '-5%', bottom: '-12%', width: '30vw', maxWidth: '37%', transformOrigin: 'bottom right' }}
               alt=""
             />
             {/* 左侧叶子 */}
             <img
               src={assetUrl('homepage-leaves-2.png')}
               className="absolute z-30 animate-leaf-sway-left"
-              style={{ left: '-5%', bottom: '-18%', width: '37%', transformOrigin: 'bottom left' }}
+              style={{ left: '-5%', bottom: '-12%', width: '30vw', maxWidth: '37%', transformOrigin: 'bottom left' }}
               alt=""
             />
 
             {/* 小西红柿 - 更大更靠近按键 */}
-            <div className="absolute bottom-[21%] left-1/2 -translate-x-1/2 z-20">
+            <div className="absolute bottom-[26%] md:bottom-[22%] left-1/2 -translate-x-1/2 z-20">
               <img
                 src={assetUrl('homepage-tomato.png')}
-                className="w-[360px] md:w-[460px] animate-tomato-bounce"
+                className="w-[64vw] max-w-[373px] md:w-[480px] animate-tomato-bounce"
                 alt=""
               />
             </div>
 
             {/* 按钮区域 - 更大，更靠近 */}
-            <div className="absolute bottom-[7%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-5">
+            <div className="absolute bottom-[11%] md:bottom-[5%] left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 md:gap-3">
               {/* 选择关卡 */}
               <button
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button1.png')} className="w-[104px] h-[104px] md:w-[124px] md:h-[124px] object-contain drop-shadow-lg" alt="选择关卡" />
+                <img src={assetUrl('homepage-button1.png')} className="w-[96px] h-[96px] md:w-[125px] md:h-[125px] object-contain drop-shadow-lg" alt="选择关卡" />
               </button>
               {/* 开始游戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
-                <img src={assetUrl('homepage-button.png')} className="h-[104px] md:h-[128px] object-contain drop-shadow-lg" alt="开始游戏" />
+                <img src={assetUrl('homepage-button.png')} className="h-[90px] md:h-[110px] object-contain drop-shadow-lg" alt="开始游戏" />
               </button>
             </div>
 
@@ -5734,8 +5765,8 @@ export default function Game() {
         )}
 
         {/* Game Over - Rainy Cloud Style */}
-        {gameState.gameOver && deathAnimDone && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-50" style={{ animation: 'fadeIn 0.2s ease-out', background: 'rgba(0,0,0,0.55)' }}>
+        {gameState.gameOver && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-[80] pointer-events-auto" style={{ animation: 'fadeIn 0.2s ease-out', background: 'rgba(0,0,0,0.55)' }}>
             {/* Falling raindrop images (start from below b-clouds at 18%, original size 41x48) */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
               {Array.from({length: 20}).map((_, i) => {
@@ -5757,16 +5788,16 @@ export default function Game() {
               })}
             </div>
             {/* B-clouds covering the top */}
-            <div className="absolute top-0 left-0 right-0 pointer-events-none z-[2]" style={{ height: '18%' }}>
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-10%] left-[-5%]" style={{ width: '35%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-5%] left-[18%]" style={{ width: '30%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-8%] left-[40%]" style={{ width: '32%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-3%] left-[60%]" style={{ width: '28%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[-10%] left-[78%]" style={{ width: '30%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[5%] left-[5%]" style={{ width: '25%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[3%] left-[30%]" style={{ width: '28%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[8%] left-[55%]" style={{ width: '26%', opacity: 1 }} />
-              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[6%] left-[80%]" style={{ width: '25%', opacity: 1 }} />
+            <div className="absolute top-0 left-0 right-0 pointer-events-none z-[2] px-2 pt-1" style={{ height: '18%' }}>
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[1%] left-[0%]" style={{ width: '35%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[4%] left-[18%]" style={{ width: '30%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[2%] left-[40%]" style={{ width: '32%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[6%] left-[60%]" style={{ width: '28%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[1%] right-[0%]" style={{ width: '30%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[8%] left-[5%]" style={{ width: '25%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[10%] left-[30%]" style={{ width: '28%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[12%] left-[55%]" style={{ width: '26%', opacity: 1 }} />
+              <img src={assetUrl('assets/b-cloud.png')} alt="cloud" className="absolute top-[9%] left-[80%]" style={{ width: '25%', opacity: 1 }} />
             </div>
 
             {/* Card content */}
@@ -6035,62 +6066,6 @@ export default function Game() {
           </div>
         )}
 
-      {/* Keyboard Hints - Clean Simple Style (hidden in fullscreen) */}
-      {!isFullscreen && (
-      <div className="mt-3 hidden md:flex gap-4 px-5 py-2.5 rounded-xl shadow-sm" style={{ background: 'rgba(255,255,255,0.9)' }}>
-        <span className="flex items-center gap-1.5">
-          <kbd className="border border-gray-300 rounded-md px-2 py-0.5 text-xs font-bold text-gray-600 bg-gray-50">←</kbd>
-          <span className="text-gray-500 text-xs font-medium" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>移动</span>
-        </span>
-        <span className="text-gray-300">|</span>
-        <span className="flex items-center gap-1.5">
-          <kbd className="border border-gray-300 rounded-md px-2 py-0.5 text-xs font-bold text-gray-600 bg-gray-50">↑</kbd>
-          <span className="text-gray-500 text-xs font-medium" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>跳跃</span>
-        </span>
-        <span className="text-gray-300">|</span>
-        <span className="flex items-center gap-1.5">
-          <kbd className="border border-gray-300 rounded-md px-2 py-0.5 text-xs font-bold text-gray-600 bg-gray-50">F</kbd>
-          <span className="text-gray-500 text-xs font-medium" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>攻击</span>
-        </span>
-        <span className="text-gray-300">|</span>
-        <span className="flex items-center gap-1.5">
-          <kbd className="border border-gray-300 rounded-md px-2 py-0.5 text-xs font-bold text-gray-600 bg-gray-50">↓</kbd>
-          <span className="text-gray-500 text-xs font-medium" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>下蹲</span>
-        </span>
-      </div>
-      )}
-
-      {/* Fullscreen Toggle Button */}
-      <button
-        onClick={toggleFullscreen}
-        className="absolute bottom-4 right-4 z-50 w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
-        style={{
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(8px)',
-          border: '2px solid rgba(255,255,255,0.4)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
-        }}
-        title={isFullscreen ? '退出全屏' : '全屏'}
-      >
-        {isFullscreen ? (
-          /* Shrink icon: 4 arrows pointing inward */
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="4 14 10 14 10 20"/>
-            <polyline points="20 10 14 10 14 4"/>
-            <polyline points="14 20 14 14 20 14"/>
-            <polyline points="10 4 10 10 4 10"/>
-          </svg>
-        ) : (
-          /* Expand icon: 4 arrows pointing outward from corners */
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 3 21 3 21 9"/>
-            <polyline points="9 21 3 21 3 15"/>
-            <polyline points="21 15 21 21 15 21"/>
-            <polyline points="3 9 3 3 9 3"/>
-          </svg>
-        )}
-      </button>
-
       {/* CSS Animations */}
       <style>{`
         @keyframes cloud-sway-1 { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(30px); } }
@@ -6156,7 +6131,7 @@ export default function Game() {
         .animate-leaf-sway-left { animation: leaf-sway-left 7s ease-in-out infinite; }
         .animate-tomato-bounce { animation: tomato-bounce 5s ease-in-out infinite; }
       `}</style>
-    </div>
+      </div>
     </div>
   );
 }
