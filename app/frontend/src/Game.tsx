@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -14,6 +14,26 @@ import {
 import { Entity, GameState, Projectile } from './types';
 import { useGameLoop } from './hooks/useGameLoop';
 
+const LEVEL_OVERRIDE_STORAGE_KEY = 'xiaoxixi-level-overrides';
+const PREVIEW_LEVEL_STORAGE_KEY = 'xiaoxixi-preview-level';
+
+function getPlayableLevel(levelIndex: number): string[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem(LEVEL_OVERRIDE_STORAGE_KEY);
+      if (raw) {
+        const overrides = JSON.parse(raw) as Record<string, string[]>;
+        const editedLevel = overrides[String(levelIndex)];
+        if (Array.isArray(editedLevel) && editedLevel.length > 0) {
+          return editedLevel;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to read edited level:', error);
+    }
+  }
+  return LEVELS[levelIndex];
+}
 function assetUrl(path: string) {
   const base = import.meta.env.BASE_URL || '/';
   return `${base.replace(/\/?$/, '/')}${path.replace(/^\/+/, '')}`;
@@ -21,16 +41,57 @@ function assetUrl(path: string) {
 
 // 鈹€鈹€鈹€ Helper Functions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
-function createPlayer(level: string[]): Entity {
-  let px = 50, py = 50;
-  level.forEach((row, y) => {
-    const x = row.indexOf('P');
+function findGroundTopBelow(level: string[], tileX: number, startTileY: number): number | null {
+  for (let y = Math.max(0, startTileY + 1); y < level.length; y++) {
+    const tile = level[y]?.[tileX] || ' ';
+    if ('#ZX'.includes(tile)) return y * TILE_SIZE;
+  }
+  return null;
+}
+
+function findPlayerMarkerSpawn(level: string[]): { x: number; y: number } | null {
+  for (let y = 0; y < level.length; y++) {
+    const x = (level[y] || '').indexOf('P');
     if (x !== -1) {
-      px = x * TILE_SIZE;
-      py = y * TILE_SIZE;
+      const groundTop = findGroundTopBelow(level, x, y);
+      return { x: Math.max(24, x * TILE_SIZE), y: groundTop !== null ? groundTop - 32 : y * TILE_SIZE };
     }
-  });
-  return {
+  }
+  return null;
+}
+function findVisibleSafeSpawn(level: string[]): { x: number; y: number } | null {
+  const maxCols = Math.min(20, Math.max(...level.map(row => row.length)));
+  for (let x = 2; x < maxCols; x++) {
+    for (let y = level.length - 1; y >= 1; y--) {
+      const tile = level[y]?.[x] || ' ';
+      const above = level[y - 1]?.[x] || ' ';
+      if ('#ZX'.includes(tile) && above === ' ') {
+        return { x: x * TILE_SIZE, y: (y - 1) * TILE_SIZE };
+      }
+    }
+  }
+  return null;
+}
+function createPlayer(level: string[]): Entity {
+  const markerSpawn = findPlayerMarkerSpawn(level);
+  let px = markerSpawn?.x ?? 50;
+  let py = markerSpawn?.y ?? 50;
+
+  if (!markerSpawn) {
+    let placed = false;
+    for (let y = 1; y < level.length && !placed; y++) {
+      const row = level[y] || '';
+      for (let x = 0; x < row.length; x++) {
+        if ('#ZX'.includes(row[x])) {
+          px = x * TILE_SIZE;
+          py = y * TILE_SIZE - 32;
+          placed = true;
+          break;
+        }
+      }
+    }
+  }
+return {
     id: 'player', type: 'player',
     x: px, y: py, width: 32, height: 32,
     vx: 0, vy: 0, onGround: false, jumpsRemaining: 2,
@@ -52,7 +113,9 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
       if (char === '#') {
         entities.push({ ...base, id: `${prefix}platform-${x}-${y}`, type: 'platform', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, onGround: true });
       } else if (char === 'S' || char === '*') {
-        entities.push({ ...base, id: `${prefix}item-${x}-${y}`, type: 'item', itemType: char === 'S' ? 'flower' : 'star', flowerVariant: 'single', x: x * TILE_SIZE + 8, y: char === 'S' ? y * TILE_SIZE - 18 : y * TILE_SIZE + 8, width: 24, height: 24 });
+        const isInlineFlower = char === 'S' && ((row[x - 1] || ' ') === '#' || (row[x + 1] || ' ') === '#');
+        const flowerGroundTop = isInlineFlower ? y * TILE_SIZE : (y + 1) * TILE_SIZE;
+        entities.push({ ...base, id: prefix + 'item-' + x + '-' + y, type: 'item', itemType: char === 'S' ? 'flower' : 'star', flowerVariant: 'single', x: x * TILE_SIZE + 8, y: char === 'S' ? flowerGroundTop - 24 : y * TILE_SIZE + 8, width: 24, height: 24 });
       } else if (char === 'H') {
         entities.push({ ...base, id: `${prefix}carrot-${x}-${y}`, type: 'item', itemType: 'carrot', x: x * TILE_SIZE + 2, y: y * TILE_SIZE + 10, width: 36, height: 20 });
       } else if (char === 'N' || char === 'n') {
@@ -75,6 +138,30 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
           entities.push({ ...base, id: `${prefix}eagle-${x}-${y}`, type: 'enemy', enemyType: 'eagle', x: x * TILE_SIZE, y: y * TILE_SIZE, width: 64, height: 48, originalY: y * TILE_SIZE, diveState: 'cruising', struggleCount: 0 });
         }
       } else if (char === 'Q') {
+        let peaGroundRow = y + 1;
+        for (let yy = y + 1; yy < Math.min(level.length, y + 5); yy++) {
+          const below = level[yy]?.[x] || ' ';
+          if ('#ZX'.includes(below)) {
+            peaGroundRow = yy;
+            break;
+          }
+        }
+        entities.push({
+          ...base,
+          id: `${prefix}pea-shooter-${x}-${y}`,
+          type: 'pea-shooter',
+          x: x * TILE_SIZE - 4,
+          y: peaGroundRow * TILE_SIZE - 40,
+          width: 40,
+          height: 40,
+          onGround: true,
+          facing: levelIndex === 6 && x > (level[0]?.length || 0) / 2 ? 'left' : 'right',
+          lastShootTime: 0,
+          shootInterval: 1000,
+          isCharging: false,
+          chargeStartTime: 0,
+          squishTime: 0,
+        });
       } else if (char === 'W') {
         entities.push({ ...base, id: `${prefix}hazard-${x}-${y}`, type: 'hazard', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE });
       } else if (char === 'L') {
@@ -83,8 +170,8 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
         // Thorn/spike - instant death on contact
         entities.push({ ...base, id: `${prefix}thorn-${x}-${y}`, type: 'thorn', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE });
       } else if (char === 'X') {
-        // Individual left-facing slope tile (ascending left-to-right, high on right)
-        entities.push({ ...base, id: `${prefix}slope-${x}-${y}`, type: 'slope', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, slopeDirection: 'left', onGround: true, tileCount: 1 });
+        // X is the editor's right slope.
+        entities.push({ ...base, id: `${prefix}slope-${x}-${y}`, type: 'slope', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, slopeDirection: 'right', onGround: true, tileCount: 1 });
       } else if (char === 'U') {
         entities.push({ ...base, id: `${prefix}pipe-up-${x}-${y}`, type: 'pipe', x: x * TILE_SIZE, y: y * TILE_SIZE - TILE_SIZE, width: TILE_SIZE * 2, height: TILE_SIZE * 2, onGround: true, isCeiling: false, ghost: isSubWorld });
       } else if (char === 'D') {
@@ -96,9 +183,20 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
         const pillarStartY = y * TILE_SIZE;
         entities.push({ ...base, id: `${prefix}pillar-${x}-${y}`, type: 'pillar', x: x * TILE_SIZE, y: pillarStartY, width: TILE_SIZE, height: groundY - pillarStartY, pillarSpeed: 1.5, pillarMinY: pillarStartY, pillarMaxY: groundY - TILE_SIZE * 2, phase: Math.random() * Math.PI * 2 });
       } else if (char === 'Z') {
-        // Individual right-facing slope tile (descending left-to-right, high on left)
-        entities.push({ ...base, id: `${prefix}slope-${x}-${y}`, type: 'slope', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, slopeDirection: 'right', onGround: true, tileCount: 1 });
+        // Z is the editor's left slope.
+        entities.push({ ...base, id: `${prefix}slope-${x}-${y}`, type: 'slope', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, slopeDirection: 'left', onGround: true, tileCount: 1 });
       } else if (char === 'M') {
+        entities.push({
+          ...base,
+          id: `${prefix}mushroom-${x}-${y}`,
+          type: 'item',
+          itemType: 'mushroom',
+          x: x * TILE_SIZE + 2,
+          y: y * TILE_SIZE - 8,
+          width: 44,
+          height: 40,
+          onGround: true,
+        });
       } else if (char === 'V') {
         // Vine hangs DOWN from the bottom of the floating platform below it
         // Find the platform directly below (row y+1)
@@ -147,7 +245,7 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
     const hazards = entities.filter(e => e.type === 'hazard');
     const muds = entities.filter(e => e.type === 'mud');
     const piranhas = entities.filter(e => e.type === 'enemy' && e.enemyType === 'piranha');
-    const flowerDrop = TILE_SIZE / 2;
+    const flowerDrop = 0;
     platforms.forEach(plat => {
       const hasAbove = platforms.some(p => p.x === plat.x && Math.abs(p.y - (plat.y - TILE_SIZE)) < 5);
       if (hasAbove) return;
@@ -251,8 +349,8 @@ const LEVEL_SKY_CONFIGS: LevelSkyConfig[] = [
   { skyStops: [[0,'#1A237E'],[0.2,'#4A148C'],[0.4,'#E65100'],[0.6,'#FF6F00'],[0.8,'#FFD54F'],[1,'#4E342E']], sunMoon: { type: 'sun', x: 0.85, y: 0.8, size: 60 }, brightness: 0.6 },
   // Level 6: Night - moon just rising
   { skyStops: [[0,'#0D1B2A'],[0.3,'#1B2838'],[0.6,'#1A237E'],[0.85,'#283593'],[1,'#1B5E20']], sunMoon: { type: 'moon', x: 0.2, y: 0.5, size: 40 }, stars: true, brightness: 0.3 },
-  // Level 7: Blank level
-  { skyStops: [[0,'#10212E'],[0.5,'#1A2D3B'],[1,'#2B3E4C']], brightness: 0.45 },
+  // Level 7: Same night mood as Level 8, without aurora; moon centered.
+  { skyStops: [[0,'#0D1B2A'],[0.3,'#1B2838'],[0.5,'#263238'],[0.75,'#37474F'],[1,'#1B3A2A']], sunMoon: { type: 'moon', x: 0.5, y: 0.16, size: 42 }, stars: true, brightness: 0.25 },
   // Level 8: Late night/pre-dawn - moon on right, shooting star
   { skyStops: [[0,'#0D1B2A'],[0.3,'#1B2838'],[0.5,'#263238'],[0.75,'#37474F'],[1,'#1B3A2A']], sunMoon: { type: 'moon', x: 0.82, y: 0.2, size: 38 }, stars: true, shootingStar: true, brightness: 0.25 },
   // Level 9: Same as Level 1 (blue top, light yellow bottom)
@@ -295,9 +393,6 @@ function drawParallaxBackground(
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   }
 
-  if (level === 6) {
-    return;
-  }
 
   // Level 1 (index 0): Draw stretched background image over sky
   if (level === 0) {
@@ -767,10 +862,7 @@ function drawForegroundFlowers(
   const level = currentLevel ?? 0;
   const config = LEVEL_SKY_CONFIGS[level % LEVEL_SKY_CONFIGS.length];
   const brightness = config.brightness;
-  // Level 7 is blank, so skip foreground decorations entirely.
-  if (level === 6) return;
-
-  const flowersOpen = level !== 6;
+  const flowersOpen = true;
 
   // Parallax speeds: flowers move faster than grass to create depth
   const grassParallaxSpeed = 0.02; // grass moves slowly (further away feel)
@@ -1935,14 +2027,32 @@ export default function Game() {
     };
   }, []);
 
-  const [gameState, setGameState] = useState<GameState>({
-    player: createPlayer(LEVELS[0]),
-    entities: createEntities(LEVELS[0], false, 0),
-    projectiles: [],
-    score: 0, coins: 0, currentLevel: 0,
-    inSubWorld: false, gameOver: false, gameWon: false, gameStarted: false,
-    cameraX: 0, lives: 3, lastDamageTime: 0, isClimbing: false,
-    stars: 0,
+  const [gameState, setGameState] = useState<GameState>(() => {
+    let initialLevel = 0;
+    let shouldStart = false;
+    if (typeof window !== 'undefined') {
+      const urlPreview = new URLSearchParams(window.location.search).get('previewLevel');
+      const pendingPreview = urlPreview ?? window.localStorage.getItem(PREVIEW_LEVEL_STORAGE_KEY);
+      const parsedPreview = pendingPreview === null ? NaN : Number(pendingPreview);
+      if (Number.isInteger(parsedPreview) && parsedPreview >= 0 && parsedPreview < LEVELS.length) {
+        initialLevel = parsedPreview;
+        shouldStart = true;
+        window.localStorage.removeItem(PREVIEW_LEVEL_STORAGE_KEY);
+        if (urlPreview !== null) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+    }
+    const initialRows = getPlayableLevel(initialLevel);
+    return {
+      player: createPlayer(initialRows),
+      entities: createEntities(initialRows, false, initialLevel),
+      projectiles: [],
+      score: 0, coins: 0, currentLevel: initialLevel,
+      inSubWorld: false, gameOver: false, gameWon: false, gameStarted: shouldStart,
+      cameraX: 0, lives: 3, lastDamageTime: 0, isClimbing: false,
+      stars: 0,
+    };
   });
 
   // Start BGM when game starts
@@ -2208,9 +2318,9 @@ export default function Game() {
       ctx.textAlign = 'center';
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
       ctx.shadowBlur = 8;
-      ctx.fillText(`第${levelTransition.toLevel + 1} 关`, w / 2, h / 2 - 10);
+      ctx.fillText(`${levelTransition.toLevel + 1} `, w / 2, h / 2 - 10);
       ctx.font = '16px sans-serif';
-      const timeLabels = ['黎明', '清晨', '正午', '午后', '傍晚', '夜晚', '深夜', '凌晨', '黎明', '清晨'];
+      const timeLabels = ['', '', '', '', '', '', '', '', '', ''];
       ctx.fillText(timeLabels[levelTransition.toLevel] || '', w / 2, h / 2 + 20);
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1;
@@ -2332,8 +2442,15 @@ export default function Game() {
   const resetGameRef = useRef<(levelIdx?: number) => void>(null as any);
 
   const resetGame = (levelIdx = 0) => {
-    const level = LEVELS[levelIdx];
+    const level = getPlayableLevel(levelIdx);
     const initialPlayer = createPlayer(level);
+    if (levelIdx === 6) {
+      const safeSpawn = findPlayerMarkerSpawn(level) || findVisibleSafeSpawn(level);
+      if (safeSpawn) {
+        initialPlayer.x = safeSpawn.x;
+        initialPlayer.y = safeSpawn.y;
+      }
+    }
     // Clear all animation refs to prevent stale state crashes
     pipeAnimRef.current = null;
     deathAnimRef.current = null;
@@ -2375,7 +2492,7 @@ export default function Game() {
       if (e.code !== 'Enter') return;
       setGameState(prev => {
       if (!prev.gameStarted) {
-          return { ...prev, player: createPlayer(LEVELS[0]), entities: createEntities(LEVELS[0], false, 0), projectiles: [], score: 0, coins: 0, stars: 0, lives: 3, currentLevel: 0, inSubWorld: false, gameOver: false, gameWon: false, gameStarted: true, cameraX: 0, lastDamageTime: 0, isClimbing: false };
+          return { ...prev, player: createPlayer(getPlayableLevel(0)), entities: createEntities(getPlayableLevel(0), false, 0), projectiles: [], score: 0, coins: 0, stars: 0, lives: 3, currentLevel: 0, inSubWorld: false, gameOver: false, gameWon: false, gameStarted: true, cameraX: 0, lastDamageTime: 0, isClimbing: false };
         }
         if (prev.gameWon) {
           // Require at least 1 second delay before allowing level advance to prevent accidental skip
@@ -2445,8 +2562,8 @@ export default function Game() {
         if (!hasLevelGround || !hasPipe || playerMissing) {
           return {
             ...prev,
-            player: createPlayer(LEVELS[2]),
-            entities: createEntities(LEVELS[2], false, 2),
+            player: createPlayer(getPlayableLevel(2)),
+            entities: createEntities(getPlayableLevel(2), false, 2),
             projectiles: [],
             inSubWorld: false,
             cameraX: 0,
@@ -2466,7 +2583,7 @@ export default function Game() {
       // 鈹€鈹€鈹€ Pre-compute entity type lookups (avoids repeated .filter() per frame) 鈹€鈹€鈹€
       const currentLevelIdx = prev.currentLevel;
       let inSubWorld = prev.inSubWorld;
-      const activeLevel = inSubWorld ? SUB_WORLD_LEVELS[0] : LEVELS[currentLevelIdx];
+      const activeLevel = inSubWorld ? SUB_WORLD_LEVELS[0] : getPlayableLevel(currentLevelIdx);
       const activeLevelWidth = activeLevel[0].length * TILE_SIZE;
       if (currentLevelIdx === 7) {
         entities = entities.filter(e => !(e.type === 'enemy' && e.enemyType === 'piranha'));
@@ -3201,6 +3318,46 @@ export default function Game() {
         }
       });
 
+      _peaShooters.forEach(shooter => {
+        if (!shooter.lastShootTime) shooter.lastShootTime = now - Math.random() * 500;
+        const timeSinceLastShot = now - shooter.lastShootTime;
+        const shootInterval = shooter.shootInterval || 1000;
+        const chargeTime = 180;
+
+        if (!shooter.isCharging && timeSinceLastShot > shootInterval) {
+          shooter.isCharging = true;
+          shooter.isSquashing = true;
+          shooter.chargeStartTime = now;
+        }
+
+        if (shooter.isCharging && now - (shooter.chargeStartTime || 0) >= chargeTime) {
+          shooter.isCharging = false;
+          shooter.isSquashing = false;
+          shooter.lastShootTime = now;
+          shooter.squishTime = now;
+          const dir = shooter.facing === 'left' ? -1 : 1;
+          const isLevel7Pea = currentLevelIdx === 6;
+          const peaSize = isLevel7Pea ? 46 : 18;
+          nextProjectiles.push({
+            id: `pea3-${shooter.id}-${now}`,
+            x: shooter.x + shooter.width / 2 - peaSize / 2 + dir * (isLevel7Pea ? 18 : 8),
+            y: shooter.y + shooter.height * 0.45 - peaSize / 2,
+            vx: dir * (isLevel7Pea ? 3.1 : 5.2),
+            vy: isLevel7Pea ? -7.8 : -4.8,
+            width: peaSize,
+            height: peaSize,
+            subWorld: inSubWorld,
+            isDead: false,
+            projectileType: 'pea3',
+            rotation: 0,
+            gravity: isLevel7Pea ? GRAVITY * 0.48 : GRAVITY * 0.9,
+            spawnTime: now,
+            rollStartTime: 0,
+            isRolling: false,
+          });
+        }
+      });
+
       // Popcorn/egg projectile physics - arcs with gravity, hits player
       nextProjectiles = nextProjectiles.map(p => {
         if (p.isDead) return p;
@@ -3239,6 +3396,110 @@ export default function Game() {
           // Remove if off-screen
           if (p.x < player.x - 800 || p.x > player.x + 1200 || p.y > CANVAS_HEIGHT + 100) p.isDead = true;
         }
+        return p;
+      });
+
+      nextProjectiles = nextProjectiles.map(p => {
+        if (p.isDead || p.projectileType !== 'pea3') return p;
+
+        p.vy += (p.gravity || GRAVITY);
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation = (p.rotation || 0) + Math.max(-0.2, Math.min(0.2, p.vx * 0.04));
+
+        let landed = false;
+        const peaSolids = p.subWorld === inSubWorld ? _allSolids : entities.filter(e => (e.type === 'platform' || e.type === 'pipe' || e.type === 'pillar') && e.subWorld === p.subWorld);
+        for (const solid of peaSolids) {
+          if (
+            p.x < solid.x + solid.width &&
+            p.x + p.width > solid.x &&
+            p.y + p.height > solid.y &&
+            p.y + p.height < solid.y + 18 &&
+            p.vy >= 0
+          ) {
+            p.y = solid.y - p.height;
+            p.vy = 0;
+            if (!p.isRolling) {
+              p.isRolling = true;
+              p.rollStartTime = now;
+            }
+            p.vx = p.vx >= 0 ? 2.6 : -2.6;
+            landed = true;
+            break;
+          }
+        }
+
+        if (!landed) {
+          const peaSlopes = p.subWorld === inSubWorld ? _slopes : entities.filter(e => e.type === 'slope' && e.subWorld === p.subWorld);
+          for (const slope of peaSlopes) {
+            if (p.x + p.width > slope.x && p.x < slope.x + slope.width) {
+              const centerX = p.x + p.width / 2;
+              const relX = Math.max(0, Math.min(1, (centerX - slope.x) / slope.width));
+              const surfaceY = slope.slopeDirection === 'right'
+                ? slope.y + relX * slope.height
+                : slope.y + (1 - relX) * slope.height;
+              if (p.vy >= 0 && p.y + p.height >= surfaceY && p.y + p.height <= surfaceY + 20) {
+                p.y = surfaceY - p.height;
+                p.vy = 0;
+                if (!p.isRolling) {
+                  p.isRolling = true;
+                  p.rollStartTime = now;
+                }
+                p.vx = slope.slopeDirection === 'right' ? 2.8 : -2.8;
+                landed = true;
+                break;
+              }
+            }
+          }
+        }
+
+        const mushrooms = p.subWorld === inSubWorld
+          ? _items.filter(item => item.itemType === 'mushroom')
+          : entities.filter(e => e.type === 'item' && e.itemType === 'mushroom' && e.subWorld === p.subWorld);
+        for (const mushroom of mushrooms) {
+          if (
+            p.x < mushroom.x + mushroom.width &&
+            p.x + p.width > mushroom.x &&
+            p.y < mushroom.y + mushroom.height &&
+            p.y + p.height > mushroom.y
+          ) {
+            p.y = mushroom.y - p.height - 2;
+            p.vy = JUMP_STRENGTH * 0.55;
+            p.vx = (p.vx >= 0 ? 1 : -1) * Math.max(3.2, Math.abs(p.vx));
+            p.isRolling = false;
+            p.rollStartTime = 0;
+            break;
+          }
+        }
+
+        if (p.isRolling) {
+          if (now - (p.rollStartTime || now) > 3000) p.isDead = true;
+          p.vx *= 0.995;
+        }
+
+        if (
+          p.x < player.x + player.width &&
+          p.x + p.width > player.x &&
+          p.y < player.y + player.height &&
+          p.y + p.height > player.y
+        ) {
+          p.isDead = true;
+          if (now - lastDamageTime > 1500) {
+            lives -= 1;
+            lastDamageTime = now;
+            player.vy = -12;
+            player.vx = player.x < p.x ? -6 : 6;
+            playSfx('hit');
+            if (lives <= 0) {
+              if (!deathAnimRef.current) {
+                deathAnimRef.current = { active: true, phase: 'bounce', startTime: Date.now(), startX: player.x, startY: player.y, cameraX: prev.cameraX };
+              }
+              gameOver = true;
+            }
+          }
+        }
+
+        if (p.y > CANVAS_HEIGHT + 120 || p.x < player.x - 900 || p.x > player.x + 1400) p.isDead = true;
         return p;
       });
 
@@ -3320,14 +3581,14 @@ export default function Game() {
         // Phase: 0-3s accelerate, 3-7s fast, 7-10s decelerate
         let speedMultiplier: number;
         if (cycleTime < 3000) {
-          // Accelerating phase: 0锟? (ease-in)
+          // Accelerating phase: 0? (ease-in)
           const t = cycleTime / 3000;
           speedMultiplier = t * t; // quadratic ease-in
         } else if (cycleTime < 7000) {
           // Fast phase: stay at max
           speedMultiplier = 1.0;
         } else {
-          // Decelerating phase: 1锟?.05 (ease-out)
+          // Decelerating phase: 1?.05 (ease-out)
           const t = (cycleTime - 7000) / 3000;
           speedMultiplier = 1.0 - t * t * 0.95; // quadratic ease-out, never fully stops
         }
@@ -3525,6 +3786,28 @@ export default function Game() {
         }
       });
 
+      _peaShooters.forEach(shooter => {
+        const shooterHitX = shooter.x + 6;
+        const shooterHitY = shooter.y + 6;
+        const shooterHitW = shooter.width - 12;
+        const shooterHitH = shooter.height - 8;
+        if (player.x < shooterHitX + shooterHitW && player.x + player.width > shooterHitX && player.y < shooterHitY + shooterHitH && player.y + player.height > shooterHitY) {
+          if (now - lastDamageTime > 1500) {
+            lives -= 1;
+            lastDamageTime = now;
+            player.vy = -12;
+            player.vx = player.x < shooter.x ? -7 : 7;
+            playSfx("hit");
+            if (lives <= 0) {
+              if (!deathAnimRef.current) {
+                deathAnimRef.current = { active: true, phase: 'bounce', startTime: Date.now(), startX: player.x, startY: player.y, cameraX: prev.cameraX };
+              }
+              gameOver = true;
+            }
+          }
+        }
+      });
+
       // Hazard/Mud
       const hazardMudArr = [..._hazards, ..._muds];
       for (let hmi = 0; hmi < hazardMudArr.length; hmi++) {
@@ -3605,7 +3888,7 @@ export default function Game() {
           if (shouldTrigger) {
             const targetInSubWorld = !inSubWorld;
             const nextEntities = createEntities(
-              targetInSubWorld ? SUB_WORLD_LEVELS[0] : LEVELS[2],
+              targetInSubWorld ? SUB_WORLD_LEVELS[0] : getPlayableLevel(2),
               targetInSubWorld,
               targetInSubWorld ? 0 : 2,
             );
@@ -3694,7 +3977,7 @@ export default function Game() {
       });
 
       if (exitSubWorldFromStar) {
-        const nextEntities = createEntities(LEVELS[2], false, 2);
+        const nextEntities = createEntities(getPlayableLevel(2), false, 2);
         const overworldPipes = nextEntities.filter(e => e.type === 'pipe').sort((a, b) => a.x - b.x);
         const returnPipe = overworldPipes[overworldPipes.length - 1];
         if (returnPipe) {
@@ -3708,6 +3991,21 @@ export default function Game() {
           inSubWorld = false;
           nextProjectiles = [];
           cameraXOverride = Math.max(0, player.x - CANVAS_WIDTH / 3);
+        }
+      }
+      if (currentLevelIdx === 6) {
+        const level7MissingPlayer = !Number.isFinite(player.x) || !Number.isFinite(player.y) || player.y > CANVAS_HEIGHT + 160 || player.y < -160;
+        if (level7MissingPlayer) {
+          const safeSpawn = findPlayerMarkerSpawn(activeLevel) || findVisibleSafeSpawn(activeLevel);
+          if (safeSpawn) {
+            player.x = safeSpawn.x;
+            player.y = safeSpawn.y;
+            player.vx = 0;
+            player.vy = 0;
+            player.onGround = false;
+            player.jumpsRemaining = 2;
+            cameraXOverride = Math.max(0, safeSpawn.x - CANVAS_WIDTH / 3);
+          }
         }
       }
 
@@ -3745,7 +4043,7 @@ export default function Game() {
           }
           gameOver = true;
         } else {
-          const lev = inSubWorld ? SUB_WORLD_LEVELS[0] : LEVELS[prev.currentLevel];
+          const lev = inSubWorld ? SUB_WORLD_LEVELS[0] : getPlayableLevel(prev.currentLevel);
           const sp = createPlayer(lev);
           player.x = sp.x; player.y = sp.y; player.vx = 0; player.vy = 0; cameraXOverride = 0;
         }
@@ -3757,7 +4055,6 @@ export default function Game() {
       const cameraX = cameraXOverride !== null
         ? targetCX
         : Math.max(0, Math.min(prev.cameraX + (targetCX - prev.cameraX) * 0.08, maxCameraX));
-
       // Periodic random atmospheric lightning for Level 10 (every 5-8 seconds)
       if (currentLevelIdx === 9 && now - lastThunderTimeRef.current > 5000) {
         if (Math.random() < 0.012) {
@@ -4180,7 +4477,7 @@ export default function Game() {
         // O(1) lookup instead of O(n) entities.some()
         const hasWaterAbove = hazardKeySet.has(`${Math.round(e.x)},${Math.round(e.y - TILE_SIZE)}`);
         const waterTop = e.y;
-        if (currentLevel === 3 || currentLevel === 9) {
+        if (currentLevel === 3 || currentLevel === 6 || currentLevel === 9) {
           const isLeftEdge = !hazardKeySet.has(`${Math.round(e.x - TILE_SIZE)},${Math.round(e.y)}`);
           if (!hasWaterAbove && isLeftEdge) {
             let runLeft = e.x;
@@ -4404,25 +4701,25 @@ export default function Game() {
         ctx.restore();
       } else if (e.type === 'pea-shooter') {
         ctx.save();
-        const bob = Math.sin(Date.now() * 0.004 + e.x * 0.02) * 2.5;
+        const bob = 0;
         const centerX = dx + e.width / 2;
         const peaIdleImg = pea1Img.current;
         const peaChargeImg = pea2Img.current;
-        const img = e.isSquashing ? peaChargeImg : peaIdleImg;
-        const anchorY = e.y + 14 + bob;
+        const img = (e.isCharging || e.isSquashing) ? peaChargeImg : peaIdleImg;
+        const anchorY = e.y + e.height + bob;
         ctx.translate(centerX + 2, anchorY);
         ctx.scale(1, 1);
         if (img && img.complete && img.naturalWidth > 0) {
           const fit = 36 / img.naturalHeight;
           const drawW = img.naturalWidth * fit;
           const drawH = img.naturalHeight * fit;
-          if (e.isSquashing) {
+          if (e.isCharging || e.isSquashing) {
             ctx.translate(2, 2);
             ctx.scale(1, 0.88);
           }
           ctx.drawImage(img, -drawW / 2, -drawH, drawW, drawH);
         } else {
-          ctx.fillStyle = e.isSquashing ? '#9CCC65' : '#7CB342';
+          ctx.fillStyle = (e.isCharging || e.isSquashing) ? '#9CCC65' : '#7CB342';
           ctx.beginPath();
           ctx.ellipse(0, 0, 16, 14, 0, 0, Math.PI * 2);
           ctx.fill();
@@ -4896,7 +5193,7 @@ export default function Game() {
           const stemBend = e.itemType === 'star' ? 0 : Math.sin(Date.now() * 0.0035 + e.x * 0.008) * 0.03;
           const starBob = 0;
           const baseX = dx + e.width / 2 + sway;
-          const baseY = e.y + e.height / 2 + starBob;
+          const baseY = e.itemType === 'flower' ? e.y + e.height : e.y + e.height / 2 + starBob;
           ctx.translate(baseX, baseY);
           const flowerHitPulse = e.itemType === 'flower' && e.thornHitTime ? Math.max(0, 1 - (Date.now() - e.thornHitTime) / 280) : 0;
           ctx.rotate(stemBend + flowerHitPulse * Math.sin(Date.now() * 0.08) * 0.2);
@@ -5061,7 +5358,6 @@ export default function Game() {
         ctx.scale(player.squashX || 1, player.squashY || 1);
       }
       if (player.facing === 'left') ctx.scale(-1, 1);
-      ctx.translate(-player.width / 2, -player.height);
 
       // Check if player is in shoot animation (stretch the tomato image forward for mouth protrusion)
       const shootElapsed = player.shootTime ? Date.now() - player.shootTime : 999;
@@ -5075,12 +5371,16 @@ export default function Game() {
           const mouthProgress = shootElapsed < 100 ? shootElapsed / 100 : (250 - shootElapsed) / 150;
           const stretchX = mouthProgress * 10; // pixels to extend forward
           // Draw the tomato stretched wider on the front (right) side
-          ctx.drawImage(playerImg, -4, -4, player.width + 8 + stretchX, player.height + 8);
+          const drawW = player.width + 8 + stretchX;
+          const drawH = player.height + 8;
+          ctx.drawImage(playerImg, -drawW / 2, -drawH, drawW, drawH);
         } else {
-          ctx.drawImage(playerImg, -4, -4, player.width + 8, player.height + 8);
+          const drawW = player.width + 8;
+          const drawH = player.height + 8;
+          ctx.drawImage(playerImg, -drawW / 2, -drawH, drawW, drawH);
         }
       } else {
-        ctx.fillStyle = '#FF4545'; ctx.beginPath(); ctx.ellipse(player.width / 2, player.height / 2 + 2, player.width / 2 - 2, player.height / 2 - 2, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FF4545'; ctx.beginPath(); ctx.ellipse(0, -player.height / 2, player.width / 2 - 2, player.height / 2 - 2, 0, 0, Math.PI * 2); ctx.fill();
       }
     }
     ctx.restore();
@@ -5384,13 +5684,16 @@ export default function Game() {
       }
     }
 
-    // Draw foreground flowers, grass, and creatures
-    drawForegroundFlowers(
-      ctx, cameraX, gameState.currentLevel,
-      bigFlowerImg, ladybugImg, ladybugBodyImg, ladybugFlyImg, ladybugWingImg,
-      birdDecoImg, level2StartTimeRef, lawnImg, lawnFlowerImg,
-      bigFlowerBlueImg, bigFlowerYellowImg, bigFlowerRedImg,
-    );
+    // Draw foreground flowers, grass, and creatures. Level 7 uses gameplay terrain at the bottom,
+    // so skip the fixed foreground layer there to avoid covering Little Tomato and the ground.
+    if (gameState.currentLevel !== 6) {
+      drawForegroundFlowers(
+        ctx, cameraX, gameState.currentLevel,
+        bigFlowerImg, ladybugImg, ladybugBodyImg, ladybugFlyImg, ladybugWingImg,
+        birdDecoImg, level2StartTimeRef, lawnImg, lawnFlowerImg,
+        bigFlowerBlueImg, bigFlowerYellowImg, bigFlowerRedImg,
+      );
+    }
 
     if (inSubWorld && bBackgroundFrontImg.current && bBackgroundFrontImg.current.complete && bBackgroundFrontImg.current.naturalWidth > 0) {
       const front = bBackgroundFrontImg.current;
@@ -5401,9 +5704,236 @@ export default function Game() {
 
     // End camera shake transform
     ctx.restore();
+    if (currentLevel === 6 && !inSubWorld) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      entities.forEach(e => {
+        if (e.subWorld !== inSubWorld) return;
+        const dx = e.x - cameraX;
+        if (dx + e.width < -80 || dx > CANVAS_WIDTH + 80) return;
+        if (e.type === 'platform' && e.y >= 360) {
+          if (grassImg.current && grassImg.current.complete && grassImg.current.naturalWidth > 0) {
+            ctx.drawImage(grassImg.current, dx, e.y, e.width, e.height);
+          } else {
+            ctx.fillStyle = '#c98232';
+            ctx.fillRect(dx, e.y, e.width, e.height);
+            ctx.fillStyle = '#4fd341';
+            ctx.fillRect(dx, e.y, e.width, 8);
+          }
+        } else if (e.type === 'slope' && e.y >= 360) {
+          const img = e.slopeDirection === 'left' ? slopeLeftImg.current : slopeRightImg.current;
+          if (img && img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, dx, e.y, e.width, e.height);
+          } else {
+            ctx.fillStyle = '#c98232';
+            ctx.fillRect(dx, e.y, e.width, e.height);
+          }
+        }
+      });
+
+      entities.forEach(e => {
+        if (e.subWorld !== inSubWorld || e.type !== 'hazard') return;
+        const dx = e.x - cameraX;
+        if (dx + e.width < -80 || dx > CANVAS_WIDTH + 80) return;
+        const t = Date.now() * 0.001;
+        const waterGrad = ctx.createLinearGradient(0, e.y, 0, e.y + e.height);
+        waterGrad.addColorStop(0, 'rgba(120, 230, 255, 0.66)');
+        waterGrad.addColorStop(0.45, 'rgba(32, 174, 238, 0.58)');
+        waterGrad.addColorStop(1, 'rgba(10, 105, 210, 0.58)');
+        ctx.fillStyle = waterGrad;
+        ctx.fillRect(dx, e.y, e.width, e.height);
+        ctx.strokeStyle = 'rgba(255,255,255,0.62)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let wx = 0; wx <= e.width; wx += 4) {
+          const y = e.y + 8 + Math.sin((e.x + wx) * 0.08 + t * 2.2) * 2;
+          if (wx === 0) ctx.moveTo(dx + wx, y); else ctx.lineTo(dx + wx, y);
+        }
+        ctx.stroke();
+      });
+
+      const drawLevel7Pea3 = (x: number, y: number, size: number, rotation = 0) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.shadowColor = 'rgba(156, 255, 68, 0.95)';
+      ctx.shadowBlur = 16;
+      const peaProjImg = pea3Img.current;
+      if (peaProjImg && peaProjImg.complete && peaProjImg.naturalWidth > 0) {
+        ctx.drawImage(peaProjImg, -size / 2, -size / 2, size, size);
+      } else {
+        ctx.fillStyle = '#8bdc3f';
+        ctx.strokeStyle = '#3f8f23';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    projectiles
+      .filter(p => !p.isDead && p.projectileType === 'pea3' && p.subWorld === inSubWorld)
+      .forEach(p => {
+        const pdx = p.x - cameraX;
+        if (pdx + p.width < -80 || pdx > CANVAS_WIDTH + 80 || p.y + p.height < -80 || p.y > CANVAS_HEIGHT + 80) return;
+        drawLevel7Pea3(pdx + p.width / 2, p.y + p.height / 2, Math.max(44, p.width), p.rotation || 0);
+      });
+
+    entities
+      .filter(e => e.type === 'pea-shooter' && e.subWorld === inSubWorld && e.squishTime && Date.now() - e.squishTime < 650)
+      .forEach(e => {
+        const burstP = Math.min(1, (Date.now() - (e.squishTime || Date.now())) / 650);
+        const dir = e.facing === 'left' ? -1 : 1;
+        const bx = e.x - cameraX + e.width / 2 + dir * (22 + burstP * 28);
+        const by = e.y + e.height * 0.42 - Math.sin(burstP * Math.PI) * 28;
+        drawLevel7Pea3(bx, by, 42 + (1 - burstP) * 8, burstP * Math.PI * 2);
+      });
+    const playerDx = player.x - cameraX;
+      if (!gameState.gameOver && playerDx > -80 && playerDx < CANVAS_WIDTH + 80 && player.y > -80 && player.y < CANVAS_HEIGHT + 80) {
+        const playerImg = littleTomatoImg.current;
+        if (playerImg && playerImg.complete && playerImg.naturalWidth > 0) {
+          ctx.save();
+          if (player.facing === 'left') {
+            ctx.translate(playerDx + player.width, player.y);
+            ctx.scale(-1, 1);
+            const drawW = player.width + 12;
+            const drawH = player.height + 12;
+            ctx.drawImage(playerImg, -4, player.height - drawH, drawW, drawH);
+          } else {
+            const drawW = player.width + 12;
+            const drawH = player.height + 12;
+            ctx.drawImage(playerImg, playerDx - 4, player.y + player.height - drawH, drawW, drawH);
+          }
+          ctx.restore();
+        } else {
+          ctx.fillStyle = '#ff4545';
+          ctx.beginPath();
+          ctx.ellipse(playerDx + player.width / 2, player.y + player.height / 2, 20, 16, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
 
   }, [gameState]);
 
+
+  useEffect(() => {
+    if (gameState.currentLevel !== 6 || gameState.inSubWorld || gameState.gameOver) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const { player, entities, projectiles, cameraX, inSubWorld } = gameState;
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    entities.forEach(e => {
+      if (e.subWorld !== inSubWorld) return;
+      const dx = e.x - cameraX;
+      if (dx + e.width < -80 || dx > CANVAS_WIDTH + 80) return;
+      if (e.type === 'platform' && e.y >= 360) {
+        if (grassImg.current && grassImg.current.complete && grassImg.current.naturalWidth > 0) {
+          ctx.drawImage(grassImg.current, dx, e.y, e.width, e.height);
+        } else {
+          ctx.fillStyle = '#c98232';
+          ctx.fillRect(dx, e.y, e.width, e.height);
+          ctx.fillStyle = '#4fd341';
+          ctx.fillRect(dx, e.y, e.width, 8);
+        }
+      } else if (e.type === 'slope' && e.y >= 360) {
+        const img = e.slopeDirection === 'left' ? slopeLeftImg.current : slopeRightImg.current;
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.drawImage(img, dx, e.y, e.width, e.height);
+        }
+      }
+    });
+
+    entities.forEach(e => {
+      if (e.subWorld !== inSubWorld || e.type !== 'hazard') return;
+      const dx = e.x - cameraX;
+      if (dx + e.width < -80 || dx > CANVAS_WIDTH + 80) return;
+      const t = Date.now() * 0.001;
+      const waterGrad = ctx.createLinearGradient(0, e.y, 0, e.y + e.height);
+      waterGrad.addColorStop(0, 'rgba(120, 230, 255, 0.72)');
+      waterGrad.addColorStop(0.45, 'rgba(32, 174, 238, 0.62)');
+      waterGrad.addColorStop(1, 'rgba(10, 105, 210, 0.6)');
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(dx, e.y, e.width, e.height);
+      ctx.strokeStyle = 'rgba(255,255,255,0.68)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let wx = 0; wx <= e.width; wx += 4) {
+        const y = e.y + 8 + Math.sin((e.x + wx) * 0.08 + t * 2.2) * 2;
+        if (wx === 0) ctx.moveTo(dx + wx, y); else ctx.lineTo(dx + wx, y);
+      }
+      ctx.stroke();
+    });
+
+    const drawLevel7Pea3 = (x: number, y: number, size: number, rotation = 0) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.shadowColor = 'rgba(156, 255, 68, 0.95)';
+      ctx.shadowBlur = 16;
+      const peaProjImg = pea3Img.current;
+      if (peaProjImg && peaProjImg.complete && peaProjImg.naturalWidth > 0) {
+        ctx.drawImage(peaProjImg, -size / 2, -size / 2, size, size);
+      } else {
+        ctx.fillStyle = '#8bdc3f';
+        ctx.strokeStyle = '#3f8f23';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    projectiles
+      .filter(p => !p.isDead && p.projectileType === 'pea3' && p.subWorld === inSubWorld)
+      .forEach(p => {
+        const pdx = p.x - cameraX;
+        if (pdx + p.width < -80 || pdx > CANVAS_WIDTH + 80 || p.y + p.height < -80 || p.y > CANVAS_HEIGHT + 80) return;
+        drawLevel7Pea3(pdx + p.width / 2, p.y + p.height / 2, Math.max(44, p.width), p.rotation || 0);
+      });
+
+    entities
+      .filter(e => e.type === 'pea-shooter' && e.subWorld === inSubWorld && e.squishTime && Date.now() - e.squishTime < 650)
+      .forEach(e => {
+        const burstP = Math.min(1, (Date.now() - (e.squishTime || Date.now())) / 650);
+        const dir = e.facing === 'left' ? -1 : 1;
+        const bx = e.x - cameraX + e.width / 2 + dir * (22 + burstP * 28);
+        const by = e.y + e.height * 0.42 - Math.sin(burstP * Math.PI) * 28;
+        drawLevel7Pea3(bx, by, 42 + (1 - burstP) * 8, burstP * Math.PI * 2);
+      });
+    const playerDx = player.x - cameraX;
+    if (playerDx > -80 && playerDx < CANVAS_WIDTH + 80 && player.y > -80 && player.y < CANVAS_HEIGHT + 80) {
+      const playerImg = littleTomatoImg.current;
+      if (playerImg && playerImg.complete && playerImg.naturalWidth > 0) {
+        if (player.facing === 'left') {
+          ctx.translate(playerDx + player.width, player.y);
+          ctx.scale(-1, 1);
+          const drawW = player.width + 12;
+            const drawH = player.height + 12;
+            ctx.drawImage(playerImg, -4, player.height - drawH, drawW, drawH);
+        } else {
+          const drawW = player.width + 12;
+            const drawH = player.height + 12;
+            ctx.drawImage(playerImg, playerDx - 4, player.y + player.height - drawH, drawW, drawH);
+        }
+      } else {
+        ctx.fillStyle = '#ff4545';
+        ctx.beginPath();
+        ctx.ellipse(playerDx + player.width / 2, player.y + player.height / 2, 20, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }, [gameState]);
   const handlePointerDown = (key: string) => { touchState.current[key] = true; };
   const handlePointerUp = (key: string) => { touchState.current[key] = false; };
 
@@ -5412,12 +5942,12 @@ export default function Game() {
       {isPortrait && (
         <div className="absolute inset-0 z-[999] flex items-center justify-center bg-[#fff8ef] text-center px-6">
           <div className="max-w-sm">
-            <div className="text-5xl mb-4">↻</div>
+            <div className="text-5xl mb-4">↔</div>
             <div className="text-2xl font-bold text-[#6b4b1f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
               请横屏游玩
             </div>
             <div className="mt-3 text-base text-[#8b6b3f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
-              把手机横过来，游戏画面会正常显示
+              把设备横过来，游戏画面会正常显示
             </div>
           </div>
         </div>
@@ -5554,11 +6084,11 @@ export default function Game() {
               {/* Stars animation */}
               <div className="flex justify-center gap-3 mb-4">
                 {[0, 1, 2].map(i => (
-                  <span key={i} className="text-3xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>⭐</span>
+                  <span key={i} className="text-3xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>★</span>
                 ))}
               </div>
-              <p className="text-gray-700 font-bold text-base mb-1" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>兑换 1 枚生命</p>
-              <p className="text-gray-400 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>消耗 3 枚星星</p>
+              <p className="text-gray-700 font-bold text-base mb-1" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>兑换 1 颗生命</p>
+              <p className="text-gray-400 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>消耗 3 颗星星</p>
               {gameState.lives >= 3 ? (
                 <p className="text-red-500 text-sm mb-3 py-1.5 px-3 rounded-lg bg-red-50 font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>生命已满</p>
               ) : null}
@@ -5642,20 +6172,20 @@ export default function Game() {
               }}
             >
               <img
-                src={assetUrl('assets/homepage-title.svg')}
+                src={assetUrl('assets/homepage-logo.png')}
                 alt="小西嘻的奇幻冒险"
                 className="w-full h-auto object-contain"
               />
             </div>
 
-            {/* 右侧叶子 */}
+            {/* 也叶 */}
             <img
               src={assetUrl('homepage-leaves-1.png')}
               className="absolute z-30 animate-leaf-sway-right"
               style={{ right: '-4%', bottom: '-10%', width: 'min(28vw, 360px)', transformOrigin: 'bottom right' }}
               alt=""
             />
-            {/* 左侧叶子 */}
+            {/* 叶 */}
             <img
               src={assetUrl('homepage-leaves-2.png')}
               className="absolute z-30 animate-leaf-sway-left"
@@ -5663,7 +6193,7 @@ export default function Game() {
               alt=""
             />
 
-            {/* 小西红柿 - 更大更靠近按键 */}
+            {/* 小 -  */}
             <div
               className="absolute left-1/2 -translate-x-1/2 z-20"
               style={{ bottom: 'clamp(112px, 18vh, 180px)' }}
@@ -5676,12 +6206,12 @@ export default function Game() {
               />
             </div>
 
-            {/* 按钮区域 - 更大，更靠近 */}
+            {/* 钮 - 螅 */}
             <div
               className="absolute left-1/2 -translate-x-1/2 z-40 flex items-center"
               style={{ bottom: 'clamp(18px, 4vh, 42px)', gap: 'clamp(8px, 1.2vw, 14px)' }}
             >
-              {/* 选择关卡 */}
+              {/* 选乜 */}
               <button
                 onClick={() => setShowLevelSelect(true)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
@@ -5693,7 +6223,7 @@ export default function Game() {
                   alt="选择关卡"
                 />
               </button>
-              {/* 开始游戏 */}
+              {/* 始戏 */}
               <button
                 onClick={() => resetGame(0)}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
@@ -5702,7 +6232,7 @@ export default function Game() {
                   src={assetUrl('homepage-button.png')}
                   className="object-contain drop-shadow-lg"
                   style={{ height: 'clamp(68px, 7.4vw, 102px)' }}
-                  alt="开始游戏"
+                  alt="start game"
                 />
               </button>
             </div>
@@ -5782,7 +6312,7 @@ export default function Game() {
                       boxShadow: '0 5px 0 #c2410c',
                     }}
                   >
-                    <span className="text-white font-bold text-base" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.2)' }}>返回</span>
+                    <span className="text-white font-bold text-base" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.2)' }}>返回主界面</span>
                   </button>
                 </div>
               </div>
@@ -5867,7 +6397,7 @@ export default function Game() {
                     <path d="M3 12L12 4L21 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M5 11V19C5 19.5523 5.44772 20 6 20H9V15C9 14.4477 9.44772 14 10 14H14C14.5523 14 15 14.4477 15 15V20H18C18.5523 20 19 19.5523 19 19V11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  主页
+                  返回首页
                 </button>
               </div>
             </div>
@@ -5950,7 +6480,7 @@ export default function Game() {
               <p className="text-amber-700 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>你是真正的冒险英雄！</p>
               <div className="flex justify-center gap-2 mb-3">
                 {[0, 1, 2, 3, 4].map(i => (
-                  <span key={i} className="text-3xl" style={{ animation: `starSpin 1s ${i * 0.2}s ease-out forwards`, opacity: 0 }}>⭐</span>
+                  <span key={i} className="text-3xl" style={{ animation: `starSpin 1s ${i * 0.2}s ease-out forwards`, opacity: 0 }}>★</span>
                 ))}
               </div>
               <div className="flex items-center gap-3 mb-5">
@@ -6022,10 +6552,10 @@ export default function Game() {
               {/* Stars */}
               <div className="flex justify-center gap-3 mb-2">
                 {[0, 1, 2].map(i => (
-                  <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>⭐</span>
+                  <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>★</span>
                 ))}
               </div>
-              <p className="text-gray-500 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>下一关：第{gameState.currentLevel + 2} 关</p>
+              <p className="text-gray-500 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>下一关：第 {gameState.currentLevel + 2} 关</p>
               {/* Stats */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-yellow-50">
@@ -6059,22 +6589,22 @@ export default function Game() {
               <button className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('jump')} onPointerUp={() => handlePointerUp('jump')} onPointerLeave={() => handlePointerUp('jump')}>
-                <span className="text-white text-lg font-bold">↑</span>
+                <span className="text-white text-lg font-bold">↕</span>
               </button>
               <button className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('down')} onPointerUp={() => handlePointerUp('down')} onPointerLeave={() => handlePointerUp('down')}>
-                <span className="text-white text-lg font-bold">↓</span>
+                <span className="text-white text-lg font-bold">↕</span>
               </button>
               <button className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('left')} onPointerUp={() => handlePointerUp('left')} onPointerLeave={() => handlePointerUp('left')}>
-                <span className="text-white text-lg font-bold">←</span>
+                <span className="text-white text-lg font-bold">↕</span>
               </button>
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('right')} onPointerUp={() => handlePointerUp('right')} onPointerLeave={() => handlePointerUp('right')}>
-                <span className="text-white text-lg font-bold">→</span>
+                <span className="text-white text-lg font-bold">↕</span>
               </button>
             </div>
             <div className="pointer-events-auto flex gap-3 items-end">
@@ -6161,5 +6691,23 @@ export default function Game() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

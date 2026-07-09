@@ -1,4 +1,4 @@
-﻿export const TILE_SIZE = 40;
+export const TILE_SIZE = 40;
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
 export const GRAVITY = 1.2;
@@ -7,7 +7,7 @@ export const MOVE_SPEED = 9;
 export const FRICTION = 0.82;
 export const ENEMY_SPEED = 3;
 
-// All levels: 14 rows (index 0-13). Ground '#' at row 13 鈫?y=520, bottom=560.
+// All levels: 14 rows (index 0-13). Ground '#' at row 13 ->y=520, bottom=560.
 // Top 20px of ground visible = thin ground strip flush with canvas bottom.
 // Gameplay platforms connect down to ground. Only 1 row of ground '#' at the bottom.
 
@@ -127,22 +127,22 @@ const LEVEL_6 = [
   '########################################################################################',
 ];
 
-// Level 7: Blank-safe level
+// Level 7: Pea slope challenge
 const LEVEL_7 = [
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  'P###############################                      G         ',
-  '                                                                ',
-  '                                                                ',
-  '                                                                ',
-  '################################################################',
+  '                                                                                ',
+  '                                                                                ',
+  '                                                                                ',
+  '                              Q                              Q                  ',
+  '                          ######                         ######                 ',
+  '                                                                                ',
+  '                 Q                         Q                                    ',
+  '             ######                    #####                                    ',
+  '                                                                                ',
+  ' P                  M                         M                              G  ',
+  '############ZZXX###############ZZXX###############ZZXX###########################',
+  '################################################################################',
+  '################################################################################',
+  '################################################################################',
 ];
 
 // Level 8: Cannon Barrage - Cannons on floating platforms and ground
@@ -169,7 +169,7 @@ const LEVEL_8 = [
 // Level 9: Caves - 6 caves (3 intake O, 3 exhaust E), paired by order
 // Varied terrain with hills, gaps, and platforms at different heights
 // O = intake (suction), E = exhaust (blow out)
-// Pairing: 1st O 鈫?1st E, 2nd O 鈫?2nd E, 3rd O 鈫?3rd E
+// Pairing: 1st O ->1st E, 2nd O ->2nd E, 3rd O ->3rd E
 // Pair 2 is swapped: intake on top, exhaust on bottom
 // Caves are horizontally offset (not vertically aligned)
 const LEVEL_9 = [
@@ -191,20 +191,20 @@ const LEVEL_9 = [
 
 // Level 10: Final Gauntlet - All enemy types combined in epic finale
 const LEVEL_10 = [
-  '                                                                                              ',
-  '       A              A              A              A              A              A            ',
-  '                                                                                              ',
-  '    P       *    *         *    *         *    *         *    *         *    *                 ',
-  '         ####    ####   ####    ####   ####    ####   ####    ####   ####    ####              ',
-  '              R    Y         K    N         R    Y         K    N         R    Y               ',
-  '    ##   ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####               ',
-  '  ####        K         K         K         K         K         K         K                G  ',
-  '  ####   K         K         K         K         K         K         K         K    ##  ######',
-  '  ####  #FWWWWF#     ####  #FWWWWF#     ####  #FWWWWF#     ####  #FWWWWF#     ####      ###  ######   ',
-  '  ####  #WWWWWW#          #WWWWWW#          #WWWWWW#          #WWWWWW#               ####  ######     ',
-  '  ####  ######          ######          ######          ######               ####  ######     ',
-  '                                                                                              ',
-  '############################################################################################  ',
+  '                                                                                                      ',
+  '       A              A  ####        A  *           A   *          A              A                   ',
+  '                 ###                                                                  ####            ',
+  '    P       *    *         *           ###     *     ####     *###      *    *                        ',
+  '           ####                 ####           #              ####   ####    ####                     ',
+  '              R    Y         K    N         R    Y         K    N         R    Y                      ',
+  '         ##     ###   ###  ####  ########    ####  ###   ####  ####        ####                       ',
+  '   #          K         K         K         K         K         K      ## K                G          ',
+  '  ###    K         K         K         K         K         K         K         K    ##  ######        ',
+  '  ####  #FWWWWF#           #FWWWWF#           #FWWWWF#     ####  #FWWWWF##    ####      ###########   ',
+  ' #####WW#WWWWWW#   ##     #WWWWWW#          #WWWWWW#          #WWWWWW#WWWWWWWWWWWWWWW####     ###     ',
+  ' ###############WWWWWWWW##########WWWWWW############WWWW##############WWWWWWW####WW######    ####     ',
+  'WW##########WWWWWWWWWWWWWWWW#####WWWWWWWW###########WWWWW########WWWWWWWWWWWWWWWWW####WWWWWWWWWWWWWW##',
+  '###########################################################################################WWWWWWWWW##',
 ];
 
 export const LEVELS = [LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5, LEVEL_6, LEVEL_7, LEVEL_8, LEVEL_9, LEVEL_10];
@@ -228,3 +228,6 @@ const SUB_WORLD_1 = [
 ];
 
 export const SUB_WORLD_LEVELS = [SUB_WORLD_1];
+
+
+
