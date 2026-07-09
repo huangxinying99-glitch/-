@@ -1,3 +1,5 @@
+﻿import customLevels from './customLevels';
+
 export const TILE_SIZE = 40;
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
@@ -207,7 +209,9 @@ const LEVEL_10 = [
   '###########################################################################################WWWWWWWWW##',
 ];
 
-export const LEVELS = [LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5, LEVEL_6, LEVEL_7, LEVEL_8, LEVEL_9, LEVEL_10];
+const BASE_LEVELS = [LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5, LEVEL_6, LEVEL_7, LEVEL_8, LEVEL_9, LEVEL_10];
+
+export const LEVELS = BASE_LEVELS.map((level, index) => customLevels[index] || level);
 
 // Sub-world for Level 3 (underground)
 const SUB_WORLD_1 = [
@@ -228,6 +232,7 @@ const SUB_WORLD_1 = [
 ];
 
 export const SUB_WORLD_LEVELS = [SUB_WORLD_1];
+
 
 
 

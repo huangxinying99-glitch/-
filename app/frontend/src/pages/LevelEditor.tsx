@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+﻿import { useMemo, useRef, useState } from 'react';
 import { Brush, CheckCircle2, Copy, Eraser, FileDown, FileUp, Home, RotateCcw, Save, Trash2, Undo2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { LEVELS } from '../constants';
 
 const STORAGE_KEY = 'xiaoxixi-level-editor-map';
@@ -29,12 +29,12 @@ const TOOLS: Tool[] = [
   { char: 'S', name: '小花', hint: '碰到出金币', color: '#fb7185' },
   { char: 'N', name: '蜗牛', hint: '第一关怪', color: '#7c3aed' },
   { char: 'R', name: '兔子', hint: '第三关怪', color: '#f97316' },
-  { char: 'Y', name: '怪一', hint: 'monster1', color: '#06b6d4' },
+  { char: 'Y', name: '怪物一', hint: 'monster1', color: '#06b6d4' },
   { char: 'K', name: '青蛙', hint: 'frog', color: '#16a34a' },
   { char: 'A', name: '猫头鹰', hint: 'eagle', color: '#475569' },
   { char: 'Q', name: '豌豆荚', hint: 'pea 发射器', color: '#65a30d' },
   { char: 'M', name: '蘑菇', hint: 'real-mushroom', color: '#dc2626' },
-  { char: 'W', name: '水/危险', hint: 'water/hazard', color: '#0ea5e9' },
+  { char: 'W', name: '水', hint: 'water/hazard', color: '#0ea5e9' },
   { char: 'L', name: '沼泽', hint: 'mud', color: '#854d0e' },
   { char: 'T', name: '荆棘', hint: 'thorns', color: '#334155' },
   { char: 'U', name: '管道', hint: '进入地下', color: '#22c55e' },
@@ -93,12 +93,12 @@ function rowsForLevel(index: number) {
   const rows = readAppliedLevel(index) || LEVELS[index] || makeBlankMap();
   return normalizeRows(rows, Math.max(DEFAULT_COLS, ...rows.map(row => row.length)));
 }
+
 function makeExport(rows: string[]) {
   return '[\n' + rows.map(row => `  '${row}',`).join('\n') + '\n]';
 }
 
 export default function LevelEditor() {
-  const navigate = useNavigate();
   const [selectedLevelIndex, setSelectedLevelIndex] = useState<number>(() => getSavedLevelIndex());
   const [levelRows, setLevelRows] = useState<string[]>(() => rowsForLevel(getSavedLevelIndex()));
   const [history, setHistory] = useState<string[][]>([]);
@@ -113,14 +113,12 @@ export default function LevelEditor() {
   const currentLevelNumber = selectedLevelIndex + 1;
   const exported = useMemo(() => makeExport(levelRows), [levelRows]);
 
-  const pushHistory = (snapshot: string[]) => {
-    setHistory(prev => [...prev, snapshot]);
-  };
+  const pushHistory = (snapshot: string[]) => setHistory(prev => [...prev, snapshot]);
 
   const undo = () => {
     setHistory(prev => {
       if (prev.length === 0) {
-        setMessage('已经没有可回撤的步骤了');
+        setMessage('已经没有可以回撤的步骤了');
         return prev;
       }
       const previous = prev[prev.length - 1];
@@ -153,7 +151,7 @@ export default function LevelEditor() {
     setMessage('已保存到这个浏览器');
   };
 
-  const applyToLocalGame = () => {
+  const applyToLocalGame = async () => {
     const raw = window.localStorage.getItem(OVERRIDE_STORAGE_KEY);
     const overrides = raw ? JSON.parse(raw) : {};
     overrides[String(selectedLevelIndex)] = levelRows;
@@ -161,12 +159,22 @@ export default function LevelEditor() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(levelRows));
     window.localStorage.setItem(LAST_LEVEL_KEY, String(selectedLevelIndex));
     window.localStorage.setItem(PREVIEW_LEVEL_STORAGE_KEY, String(selectedLevelIndex));
-    setMessage(`已应用到本地游戏第 ${currentLevelNumber} 关，正在打开预览...`);
-    window.location.href = `/?previewLevel=${selectedLevelIndex}&t=${Date.now()}`;
-  };
 
-  const applyAndPreview = () => {
-    applyToLocalGame();
+    try {
+      const response = await fetch('/api/save-level', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ levelIndex: selectedLevelIndex, rows: levelRows }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) throw new Error(result?.error || 'save failed');
+      setMessage(`已应用到第 ${currentLevelNumber} 关并写入本地源码，正在打开预览...`);
+    } catch (error) {
+      console.error(error);
+      setMessage(`已应用到浏览器预览，但写入源码失败：${String(error)}`);
+    }
+
+    window.location.href = `/?previewLevel=${selectedLevelIndex}&t=${Date.now()}`;
   };
 
   const copy = async () => {
@@ -188,7 +196,7 @@ export default function LevelEditor() {
     if (!importText.trim()) return;
     pushHistory(levelRows);
     setLevelRows(parseImportedLevel(importText));
-    setMessage('已导入关卡');
+    setMessage('已导入关卡代码到画布');
   };
 
   const clear = () => {
@@ -232,7 +240,6 @@ export default function LevelEditor() {
           <div className="space-y-2">
             <button onClick={undo} disabled={history.length === 0} className="w-full h-11 rounded-md bg-violet-500 hover:bg-violet-600 disabled:bg-white/10 disabled:text-white/35 font-bold flex items-center justify-center gap-2"><Undo2 size={18} />回撤 {history.length > 0 ? `(${history.length})` : ''}</button>
             <button key={`apply-${selectedLevelIndex}`} onClick={applyToLocalGame} className="w-full h-12 rounded-md bg-yellow-400 text-slate-950 hover:bg-yellow-300 font-bold flex items-center justify-center gap-2"><CheckCircle2 size={19} />应用到第 {selectedLevelIndex + 1} 关并预览</button>
-            <button onClick={applyAndPreview} className="w-full h-11 rounded-md bg-lime-500 text-slate-950 hover:bg-lime-400 font-bold flex items-center justify-center gap-2"><Home size={18} />应用并回首页预览</button>
             <button onClick={save} className="w-full h-11 rounded-md bg-emerald-500 hover:bg-emerald-600 font-bold flex items-center justify-center gap-2"><Save size={18} />保存草稿</button>
             <button onClick={copy} className="w-full h-11 rounded-md bg-sky-500 hover:bg-sky-600 font-bold flex items-center justify-center gap-2"><Copy size={18} />复制关卡代码</button>
             <button onClick={clear} className="w-full h-11 rounded-md bg-rose-500 hover:bg-rose-600 font-bold flex items-center justify-center gap-2"><Trash2 size={18} />清空重画</button>
@@ -276,10 +283,7 @@ export default function LevelEditor() {
           </div>
 
           <div className="min-h-0 flex-1 overflow-auto bg-[#203040] p-4">
-            <div
-              className="grid w-max rounded-md border border-white/20 bg-[#83c5f7] p-2 shadow-2xl"
-              style={{ gridTemplateColumns: `repeat(${cols}, 28px)` }}
-            >
+            <div className="grid w-max rounded-md border border-white/20 bg-[#83c5f7] p-2 shadow-2xl" style={{ gridTemplateColumns: `repeat(${cols}, 28px)` }}>
               {levelRows.map((row, rowIndex) => row.padEnd(cols, ' ').split('').map((char, colIndex) => {
                 const tool = TOOLS.find(item => item.char === char);
                 const isEmpty = char === ' ';
@@ -304,11 +308,10 @@ export default function LevelEditor() {
               <div className="text-sm font-bold flex items-center gap-2"><FileDown size={16} />导出的关卡代码</div>
               <button onClick={copy} className="h-8 rounded-md bg-sky-500 px-3 text-sm font-bold hover:bg-sky-600">复制</button>
             </div>
-            <textarea readOnly value={exported} className="h-[112px] w-full resize-none rounded-md bg-black/40 p-2 font-mono text-xs text-green-100 outline-none" />
+            <textarea readOnly value={exported} className="h-[115px] w-full resize-none rounded-md bg-black/40 border border-white/10 p-2 text-xs font-mono text-lime-100" />
           </div>
         </main>
       </div>
     </div>
   );
 }
-
