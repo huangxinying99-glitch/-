@@ -113,8 +113,16 @@ function createEntities(level: string[], isSubWorld = false, levelIndex = 0): En
       if (char === '#') {
         entities.push({ ...base, id: `${prefix}platform-${x}-${y}`, type: 'platform', x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE, onGround: true });
       } else if (char === 'S' || char === '*') {
-        const isInlineFlower = char === 'S' && ((row[x - 1] || ' ') === '#' || (row[x + 1] || ' ') === '#');
-        const flowerGroundTop = isInlineFlower ? y * TILE_SIZE : (y + 1) * TILE_SIZE;
+        let flowerGroundTop = (y + 1) * TILE_SIZE;
+        if (char === 'S') {
+          for (let yy = y + 1; yy < level.length; yy++) {
+            const below = level[yy]?.[x] || ' ';
+            if ('#ZX'.includes(below)) {
+              flowerGroundTop = yy * TILE_SIZE;
+              break;
+            }
+          }
+        }
         entities.push({ ...base, id: prefix + 'item-' + x + '-' + y, type: 'item', itemType: char === 'S' ? 'flower' : 'star', flowerVariant: 'single', x: x * TILE_SIZE + 8, y: char === 'S' ? flowerGroundTop - 24 : y * TILE_SIZE + 8, width: 24, height: 24 });
       } else if (char === 'H') {
         entities.push({ ...base, id: `${prefix}carrot-${x}-${y}`, type: 'item', itemType: 'carrot', x: x * TILE_SIZE + 2, y: y * TILE_SIZE + 10, width: 36, height: 20 });
@@ -4572,7 +4580,7 @@ export default function Game() {
         }
       } else if (e.type === 'mud') {
         // Level 5 swamp liquid: contiguous mud tiles render as one connected liquid run
-        const isSwampLevel = currentLevel === 4;
+        const isSwampLevel = currentLevel === 4 || currentLevel === 5;
         if (isSwampLevel) {
           const isLeftEdge = !mudKeySet.has(`${Math.round(e.x - TILE_SIZE)},${Math.round(e.y)}`);
           if (isLeftEdge) {
@@ -6705,6 +6713,7 @@ export default function Game() {
     </div>
   );
 }
+
 
 
 
