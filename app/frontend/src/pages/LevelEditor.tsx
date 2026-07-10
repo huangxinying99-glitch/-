@@ -34,6 +34,7 @@ const TOOLS: Tool[] = [
   { char: 'A', name: '猫头鹰', hint: 'eagle', color: '#475569' },
   { char: 'Q', name: '豌豆荚', hint: 'pea 发射器', color: '#65a30d' },
   { char: 'M', name: '蘑菇', hint: 'real-mushroom', color: '#dc2626' },
+  { char: 'F', name: 'pira', hint: '食人花/水中怪', color: '#60a5fa', textColor: '#082f49' },
   { char: 'W', name: '水', hint: 'water/hazard', color: '#0ea5e9' },
   { char: 'L', name: '沼泽', hint: 'mud', color: '#854d0e' },
   { char: 'T', name: '荆棘', hint: 'thorns', color: '#334155' },
@@ -315,3 +316,4 @@ export default function LevelEditor() {
     </div>
   );
 }
+
