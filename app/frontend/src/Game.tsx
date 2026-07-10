@@ -5958,10 +5958,10 @@ export default function Game() {
           <div className="max-w-sm">
             <div className="text-5xl mb-4">↔</div>
             <div className="text-2xl font-bold text-[#6b4b1f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
-              璇锋í灞忔父鐜?
+              请横屏游玩
             </div>
             <div className="mt-3 text-base text-[#8b6b3f]" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
-              鎶婅澶囨í杩囨潵锛屾父鎴忕敾闈細姝ｅ父鏄剧ず
+              把设备横过来，游戏画面会正常显示
             </div>
           </div>
         </div>
@@ -6017,7 +6017,7 @@ export default function Game() {
               <div className="flex items-center gap-1.5 md:gap-2">
                 {/* Level indicator */}
                 <div className="flex items-center gap-1 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鍏冲崱 {gameState.currentLevel + 1}/{LEVELS.length}</span>
+                  <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>关卡 {gameState.currentLevel + 1}/{LEVELS.length}</span>
                 </div>
                 <button
                   className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
@@ -6093,7 +6093,7 @@ export default function Game() {
             <div className="relative p-6 text-center max-w-xs rounded-2xl shadow-2xl" style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)' }}>
               {/* Header */}
               <div className="mb-4">
-                <span className="text-gray-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鏄熸槦鍏戞崲</span>
+                <span className="text-gray-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>星星兑换</span>
               </div>
               {/* Stars animation */}
               <div className="flex justify-center gap-3 mb-4">
@@ -6101,10 +6101,10 @@ export default function Game() {
                   <span key={i} className="text-3xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>★</span>
                 ))}
               </div>
-              <p className="text-gray-700 font-bold text-base mb-1" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鍏戞崲 1 棰楃敓鍛</p>
-              <p className="text-gray-400 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>娑堣€?3 棰楁槦鏄</p>
+              <p className="text-gray-700 font-bold text-base mb-1" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>兑换 1 颗生命</p>
+              <p className="text-gray-400 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>消耗 3 颗星星</p>
               {gameState.lives >= 3 ? (
-                <p className="text-red-500 text-sm mb-3 py-1.5 px-3 rounded-lg bg-red-50 font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鐢熷懡宸叉弧</p>
+                <p className="text-red-500 text-sm mb-3 py-1.5 px-3 rounded-lg bg-red-50 font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>生命已满</p>
               ) : null}
               <div className="flex gap-3 justify-center">
                 <button
@@ -6187,7 +6187,7 @@ export default function Game() {
             >
               <img
                 src={assetUrl('assets/homepage-logo.png')}
-                alt="灏忚タ鍢荤殑濂囧够鍐掗櫓"
+                alt="小西嘻的奇幻冒险"
                 className="w-full h-auto object-contain"
               />
             </div>
@@ -6234,7 +6234,7 @@ export default function Game() {
                   src={assetUrl('homepage-button1.png')}
                   className="object-contain drop-shadow-lg"
                   style={{ width: 'clamp(72px, 7vw, 110px)', height: 'clamp(72px, 7vw, 110px)' }}
-                  alt="閫夋嫨鍏冲崱"
+                  alt="选择关卡"
                 />
               </button>
               {/* 濮嬫垙 */}
@@ -6270,7 +6270,7 @@ export default function Game() {
                   {/* Header Banner */}
                   <div className="text-center mb-5 -mt-1">
                     <div className="inline-block px-8 py-2 rounded-full relative" style={{ background: '#ef4444', border: '4px solid #b91c1c', boxShadow: '0 5px 0 #991b1b' }}>
-                      <span className="text-white font-bold text-lg tracking-wide" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.3)' }}>閫夋嫨鍏冲崱</span>
+                      <span className="text-white font-bold text-lg tracking-wide" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.3)' }}>选择关卡</span>
                     </div>
                   </div>
                   {/* Level grid - colorful 3D chunky buttons */}
@@ -6326,7 +6326,7 @@ export default function Game() {
                       boxShadow: '0 5px 0 #c2410c',
                     }}
                   >
-                    <span className="text-white font-bold text-base" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.2)' }}>杩斿洖涓荤晫闈</span>
+                    <span className="text-white font-bold text-base" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', textShadow: '1px 2px 0 rgba(0,0,0,0.2)' }}>返回主界面</span>
                   </button>
                 </div>
               </div>
@@ -6385,11 +6385,11 @@ export default function Game() {
               {/* Stats */}
               <div className="flex items-center gap-4 mb-5">
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-yellow-50">
-                  <span className="text-yellow-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>寰楀垎</span>
+                  <span className="text-yellow-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>得分</span>
                   <span className="text-yellow-700 text-lg font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-blue-50">
-                  <span className="text-blue-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鍏冲崱</span>
+                  <span className="text-blue-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>关卡</span>
                   <span className="text-blue-700 text-lg font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.currentLevel + 1}</span>
                 </div>
               </div>
@@ -6411,7 +6411,7 @@ export default function Game() {
                     <path d="M3 12L12 4L21 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M5 11V19C5 19.5523 5.44772 20 6 20H9V15C9 14.4477 9.44772 14 10 14H14C14.5523 14 15 14.4477 15 15V20H18C18.5523 20 19 19.5523 19 19V11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  杩斿洖棣栭〉
+                  返回首页
                 </button>
               </div>
             </div>
@@ -6484,9 +6484,9 @@ export default function Game() {
             </div>
             {/* Victory card */}
             <div className="relative rounded-3xl px-10 py-8 flex flex-col items-center shadow-2xl border-2 border-yellow-400/50" style={{ background: 'linear-gradient(135deg, rgba(255,250,230,0.97) 0%, rgba(255,240,200,0.97) 100%)', backdropFilter: 'blur(12px)', animation: 'victoryCardPop 0.6s ease-out' }}>
-              <div className="text-6xl mb-2" style={{ animation: 'trophyBounce 1.5s ease-in-out infinite', filter: 'drop-shadow(0 4px 12px rgba(255,215,0,0.5))' }}>馃弳</div>
+              <div className="text-6xl mb-2" style={{ animation: 'trophyBounce 1.5s ease-in-out infinite', filter: 'drop-shadow(0 4px 12px rgba(255,215,0,0.5))' }}>🏆</div>
               <div className="mb-2 text-center">
-                <span className="font-bold text-2xl bg-clip-text text-transparent" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', backgroundImage: 'linear-gradient(135deg, #FFD700, #FF8C00, #FF4500)', WebkitBackgroundClip: 'text' }}>鎭枩閫氬叧锛</span>
+                <span className="font-bold text-2xl bg-clip-text text-transparent" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', backgroundImage: 'linear-gradient(135deg, #FFD700, #FF8C00, #FF4500)', WebkitBackgroundClip: 'text' }}>恭喜通关！</span>
               </div>
               <div className="mb-3">
                 <img src={assetUrl('seed.png')} alt="" className="w-12 h-12 object-contain animate-bounce" />
@@ -6507,11 +6507,11 @@ export default function Game() {
                   <span className="text-orange-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-purple-100 border border-purple-300">
-                  <span className="text-purple-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鏄熸槦</span>
+                  <span className="text-purple-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>星星</span>
                   <span className="text-purple-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-red-100 border border-red-300">
-                  <span className="text-red-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鐢熷懡</span>
+                  <span className="text-red-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>生命</span>
                   <span className="text-red-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.lives}</span>
                 </div>
               </div>
@@ -6519,12 +6519,12 @@ export default function Game() {
                 <button onClick={() => startLevelTransition(gameState.currentLevel, 0)}
                   className="px-6 py-2.5 rounded-xl font-bold text-base text-white hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', background: 'linear-gradient(135deg, #FFD700, #FF8C00)' }}>
-                  鍐嶆潵涓€娆?
+                  再来一次
                 </button>
                 <button onClick={() => setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, gameWon: false }))}
                   className="px-6 py-2.5 rounded-xl font-bold text-base text-white hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
-                  杩斿洖棣栭〉
+                  返回首页
                 </button>
               </div>
             </div>
@@ -6558,7 +6558,7 @@ export default function Game() {
               {/* Header */}
               {/* Header */}
               <div className="mb-3 text-center">
-                <span className="text-green-600 font-bold text-xl" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鎭枩杩囧叧锛</span>
+                <span className="text-green-600 font-bold text-xl" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>恭喜过关！</span>
               </div>
               <div className="mb-3">
                 <img src={assetUrl('seed.png')} alt="" className="w-11 h-11 object-contain animate-bounce" />
@@ -6569,11 +6569,11 @@ export default function Game() {
                   <span key={i} className="text-2xl animate-bounce" style={{ animationDelay: `${i * 150}ms` }}>★</span>
                 ))}
               </div>
-              <p className="text-gray-500 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>涓嬩竴鍏筹細绗?{gameState.currentLevel + 2} 鍏</p>
+              <p className="text-gray-500 text-sm mb-4" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>下一关：第 {gameState.currentLevel + 2} 关</p>
               {/* Stats */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-yellow-50">
-                  <span className="text-yellow-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>寰楀垎</span>
+                  <span className="text-yellow-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>得分</span>
                   <span className="text-yellow-700 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-orange-50">
@@ -6581,7 +6581,7 @@ export default function Game() {
                   <span className="text-orange-700 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-purple-50">
-                  <span className="text-purple-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鏄熸槦</span>
+                  <span className="text-purple-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>星星</span>
                   <span className="text-purple-700 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
                 </div>
               </div>
@@ -6589,7 +6589,7 @@ export default function Game() {
               <button onClick={() => startLevelTransition(gameState.currentLevel, gameState.currentLevel + 1)}
                 className="px-8 py-2.5 rounded-xl font-bold text-base bg-green-500 text-white hover:bg-green-600 active:scale-95 transition-all cursor-pointer shadow-md"
                 style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
-                涓嬩竴鍏?
+                下一关
               </button>
           </div>
           </div>
@@ -6603,34 +6603,34 @@ export default function Game() {
               <button className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('jump')} onPointerUp={() => handlePointerUp('jump')} onPointerLeave={() => handlePointerUp('jump')}>
-                <span className="text-white text-lg font-bold">鈫</span>
+                <span className="text-white text-lg font-bold">↑</span>
               </button>
               <button className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('down')} onPointerUp={() => handlePointerUp('down')} onPointerLeave={() => handlePointerUp('down')}>
-                <span className="text-white text-lg font-bold">鈫</span>
+                <span className="text-white text-lg font-bold">↑</span>
               </button>
               <button className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('left')} onPointerUp={() => handlePointerUp('left')} onPointerLeave={() => handlePointerUp('left')}>
-                <span className="text-white text-lg font-bold">鈫</span>
+                <span className="text-white text-lg font-bold">↑</span>
               </button>
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center active:scale-90 transition-all"
                 style={{ background: 'rgba(255,255,255,0.25)' }}
                 onPointerDown={() => handlePointerDown('right')} onPointerUp={() => handlePointerUp('right')} onPointerLeave={() => handlePointerUp('right')}>
-                <span className="text-white text-lg font-bold">鈫</span>
+                <span className="text-white text-lg font-bold">↑</span>
               </button>
             </div>
             <div className="pointer-events-auto flex gap-3 items-end">
               <button className="w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-all shadow-lg"
                 style={{ background: 'rgba(239,68,68,0.8)' }}
                 onPointerDown={() => handlePointerDown('attack')} onPointerUp={() => handlePointerUp('attack')} onPointerLeave={() => handlePointerUp('attack')}>
-                <span className="text-white font-bold text-sm" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鏀</span>
+                <span className="text-white font-bold text-sm" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>攻</span>
               </button>
               <button className="w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-all shadow-lg"
                 style={{ background: 'rgba(34,197,94,0.8)' }}
                 onPointerDown={() => handlePointerDown('jump')} onPointerUp={() => handlePointerUp('jump')} onPointerLeave={() => handlePointerUp('jump')}>
-                <span className="text-white font-bold text-sm" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>璺</span>
+                <span className="text-white font-bold text-sm" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>跳</span>
               </button>
             </div>
           </div>
@@ -6705,6 +6705,8 @@ export default function Game() {
     </div>
   );
 }
+
+
 
 
 
