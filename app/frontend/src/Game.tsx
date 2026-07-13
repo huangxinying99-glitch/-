@@ -1957,7 +1957,7 @@ export default function Game() {
     img36a.src = assetUrl('assets/9-background.png');
     level9BgImg.current = img36a;
     const img36 = new Image();
-    img36.src = assetUrl('assets/10.jpg');
+    img36.src = assetUrl('assets/10-background.png');
     level10BgImg.current = img36;
     const img37 = new Image();
     img37.src = assetUrl('assets/b-cloud.png');
