@@ -41,6 +41,9 @@ const TOOLS: Tool[] = [
   { char: 'U', name: '管道', hint: '进入地下', color: '#22c55e' },
   { char: 'C', name: '炮台左', hint: 'cannon left', color: '#64748b' },
   { char: 'B', name: '炮台右', hint: 'cannon right', color: '#94a3b8', textColor: '#0f172a' },
+  { char: 'O', name: '吸入口', hint: 'cave intake', color: '#7c2d12' },
+  { char: 'E', name: '喷出口', hint: 'cave exhaust', color: '#cbd5e1', textColor: '#475569' },
+  { char: 'J', name: '风车', hint: 'windmill', color: '#e5e7eb', textColor: '#64748b' },
   { char: 'V', name: '藤蔓', hint: 'vine', color: '#15803d' },
   { char: 'I', name: '柱子', hint: 'crushing pillar', color: '#78716c' },
 ];
