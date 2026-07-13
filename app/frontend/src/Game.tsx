@@ -4485,7 +4485,7 @@ export default function Game() {
         // O(1) lookup instead of O(n) entities.some()
         const hasWaterAbove = hazardKeySet.has(`${Math.round(e.x)},${Math.round(e.y - TILE_SIZE)}`);
         const waterTop = e.y;
-        if (currentLevel === 3 || currentLevel === 6 || currentLevel === 9) {
+        if (currentLevel === 3 || currentLevel === 6 || currentLevel === 7 || currentLevel === 9) {
           const isLeftEdge = !hazardKeySet.has(`${Math.round(e.x - TILE_SIZE)},${Math.round(e.y)}`);
           if (!hasWaterAbove && isLeftEdge) {
             let runLeft = e.x;
@@ -6132,7 +6132,7 @@ export default function Game() {
                   className="px-6 py-2.5 rounded-xl font-bold text-sm bg-gray-200 text-gray-600 hover:bg-gray-300 active:scale-95 transition-all cursor-pointer"
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}
                 >
-                  鍙栨秷
+                  取消
                 </button>
               </div>
             </div>
@@ -6382,7 +6382,7 @@ export default function Game() {
             <div className="relative rounded-2xl px-10 py-8 flex flex-col items-center shadow-2xl z-10" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(10px)' }}>
               {/* Header */}
               <div className="mb-4 text-center">
-                <span className="text-red-500 font-bold text-xl" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>澶辫触</span>
+                <span className="text-red-500 font-bold text-xl" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>失败</span>
               </div>
               {/* Character */}
               <div className="relative mb-4">
@@ -6410,7 +6410,7 @@ export default function Game() {
                     <path d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C9.51472 21 7.26472 20.0196 5.63604 18.364" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
                     <path d="M3 7V12H8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  閲嶈瘯
+                  重试
                 </button>
                 <button onClick={() => setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false }))}
                   className="px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all cursor-pointer flex items-center gap-2 shadow-md"
@@ -6507,11 +6507,11 @@ export default function Game() {
               </div>
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-yellow-100 border border-yellow-300">
-                  <span className="text-yellow-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>鎬诲緱鍒</span>
+                  <span className="text-yellow-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>总得分</span>
                   <span className="text-yellow-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-orange-100 border border-orange-300">
-                  <span className="text-orange-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>閲戝竵</span>
+                  <span className="text-orange-700 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>金币</span>
                   <span className="text-orange-800 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-purple-100 border border-purple-300">
@@ -6585,7 +6585,7 @@ export default function Game() {
                   <span className="text-yellow-700 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.score}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-orange-50">
-                  <span className="text-orange-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>閲戝竵</span>
+                  <span className="text-orange-600 text-xs font-bold" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>金币</span>
                   <span className="text-orange-700 font-bold text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.coins}</span>
                 </div>
                 <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-purple-50">
