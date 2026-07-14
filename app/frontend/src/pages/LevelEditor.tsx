@@ -181,6 +181,34 @@ export default function LevelEditor() {
     window.location.href = `/?previewLevel=${selectedLevelIndex}&t=${Date.now()}`;
   };
 
+
+  const syncAllAppliedLevels = async () => {
+    try {
+      const raw = window.localStorage.getItem(OVERRIDE_STORAGE_KEY);
+      const overrides = raw ? JSON.parse(raw) : {};
+      const levels = Object.entries(overrides)
+        .filter(([, rows]) => Array.isArray(rows) && rows.length > 0)
+        .map(([levelIndex, rows]) => ({ levelIndex: Number(levelIndex), rows }));
+
+      if (levels.length === 0) {
+        setMessage('\u6d4f\u89c8\u5668\u91cc\u8fd8\u6ca1\u6709\u5df2\u5e94\u7528\u7684\u5173\u5361\u6570\u636e');
+        return;
+      }
+
+      const response = await fetch('/api/save-levels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ levels }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) throw new Error(result?.error || 'save failed');
+      setMessage(`\u5df2\u628a ${levels.length} \u4e2a\u6d4f\u89c8\u5668\u5df2\u5e94\u7528\u5173\u5361\u5199\u5165\u672c\u5730\u6e90\u7801`);
+    } catch (error) {
+      console.error(error);
+      setMessage(`\u540c\u6b65\u6240\u6709\u5173\u5361\u5931\u8d25\uff1a${String(error)}`);
+    }
+  };
+
   const copy = async () => {
     await navigator.clipboard.writeText(exported);
     setMessage('关卡代码已复制');
@@ -244,6 +272,7 @@ export default function LevelEditor() {
           <div className="space-y-2">
             <button onClick={undo} disabled={history.length === 0} className="w-full h-11 rounded-md bg-violet-500 hover:bg-violet-600 disabled:bg-white/10 disabled:text-white/35 font-bold flex items-center justify-center gap-2"><Undo2 size={18} />回撤 {history.length > 0 ? `(${history.length})` : ''}</button>
             <button key={`apply-${selectedLevelIndex}`} onClick={applyToLocalGame} className="w-full h-12 rounded-md bg-yellow-400 text-slate-950 hover:bg-yellow-300 font-bold flex items-center justify-center gap-2"><CheckCircle2 size={19} />应用到第 {selectedLevelIndex + 1} 关并预览</button>
+            <button onClick={syncAllAppliedLevels} className="w-full h-11 rounded-md bg-amber-500 text-slate-950 hover:bg-amber-400 font-bold flex items-center justify-center gap-2"><FileDown size={18} />{'\u540c\u6b65\u5168\u90e8\u5df2\u5e94\u7528\u5173\u5361'}</button>
             <button onClick={save} className="w-full h-11 rounded-md bg-emerald-500 hover:bg-emerald-600 font-bold flex items-center justify-center gap-2"><Save size={18} />保存草稿</button>
             <button onClick={copy} className="w-full h-11 rounded-md bg-sky-500 hover:bg-sky-600 font-bold flex items-center justify-center gap-2"><Copy size={18} />复制关卡代码</button>
             <button onClick={clear} className="w-full h-11 rounded-md bg-rose-500 hover:bg-rose-600 font-bold flex items-center justify-center gap-2"><Trash2 size={18} />清空重画</button>
