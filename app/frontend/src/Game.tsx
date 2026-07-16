@@ -19,6 +19,16 @@ const PREVIEW_LEVEL_STORAGE_KEY = 'xiaoxixi-preview-level';
 
 function getPlayableLevel(levelIndex: number): string[] {
   if (typeof window !== 'undefined') {
+    if (window.location.protocol !== 'file:') {
+      const host = window.location.hostname;
+      if (host !== 'localhost') {
+        if (host !== '127.0.0.1') {
+          if (!host.endsWith('.local')) {
+            return LEVELS[levelIndex];
+          }
+        }
+      }
+    }
     try {
       const raw = window.localStorage.getItem(LEVEL_OVERRIDE_STORAGE_KEY);
       if (raw) {
@@ -2043,7 +2053,7 @@ export default function Game() {
     let shouldStart = false;
     if (typeof window !== 'undefined') {
       const urlPreview = new URLSearchParams(window.location.search).get('previewLevel');
-      const pendingPreview = urlPreview ?? window.localStorage.getItem(PREVIEW_LEVEL_STORAGE_KEY);
+      const pendingPreview = urlPreview;
       const parsedPreview = pendingPreview === null ? NaN : Number(pendingPreview);
       if (Number.isInteger(parsedPreview) && parsedPreview >= 0 && parsedPreview < LEVELS.length) {
         initialLevel = parsedPreview;

@@ -3,7 +3,7 @@ import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
 
-const APP_CACHE_VERSION = '2026-06-24-2';
+const APP_CACHE_VERSION = '2026-07-16-1';
 
 async function purgeLegacyBrowserData() {
   try {
