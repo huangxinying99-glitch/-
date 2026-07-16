@@ -35,6 +35,9 @@ function getPlayableLevel(levelIndex: number): string[] {
   return LEVELS[levelIndex];
 }
 function assetUrl(path: string) {
+  if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+    return `./${path.replace(/^\/+/, '')}`;
+  }
   const base = import.meta.env.BASE_URL || '/';
   return `${base.replace(/\/?$/, '/')}${path.replace(/^\/+/, '')}`;
 }
@@ -439,41 +442,41 @@ function drawParallaxBackground(
     if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
       ctx.drawImage(bgImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
-    // Dark b-clouds drifting across the sky (fully opaque, many clouds)
+    // Dark b-clouds only inside the upper band shown in the red frame
     const cloud1 = bCloudImgRef?.current;
     const cloud2 = bCloud2ImgRef?.current;
     ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, CANVAS_WIDTH, 215);
+    ctx.clip();
     ctx.globalAlpha = 1.0;
     const time = now * 0.001;
     if (cloud1 && cloud1.complete && cloud1.naturalWidth > 0) {
       const cw = 280;
       const ch = 120;
-      // 4 cloud1 instances moving right at different speeds and heights
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         const speed = 0.012 + i * 0.004;
-        const offset = i * CANVAS_WIDTH * 0.3;
+        const offset = i * CANVAS_WIDTH * 0.32;
         const cx = ((time * speed * CANVAS_WIDTH + offset) % (CANVAS_WIDTH + cw)) - cw;
-        const cy = 15 + i * 45;
-        const scale = 0.75 + (i % 2) * 0.25;
+        const cy = 8 + i * 62;
+        const scale = 0.78 + (i % 2) * 0.18;
         ctx.drawImage(cloud1, cx, cy, cw * scale, ch * scale);
       }
     }
     if (cloud2 && cloud2.complete && cloud2.naturalWidth > 0) {
       const cw = 240;
       const ch = 100;
-      // 4 cloud2 instances moving left at different speeds and heights
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         const speed = 0.01 + i * 0.003;
-        const offset = i * CANVAS_WIDTH * 0.35;
-        const cx = CANVAS_WIDTH - ((time * speed * CANVAS_WIDTH + offset) % (CANVAS_WIDTH + cw));
-        const cy = 30 + i * 40;
-        const scale = 0.7 + (i % 2) * 0.3;
+        const offset = i * CANVAS_WIDTH * 0.3;
+        const cx = CANVAS_WIDTH - (((time * speed * CANVAS_WIDTH + offset) % (CANVAS_WIDTH + cw)) - cw);
+        const cy = 28 + i * 56;
+        const scale = 0.72 + (i % 2) * 0.16;
         ctx.drawImage(cloud2, cx, cy, cw * scale, ch * scale);
       }
     }
     ctx.restore();
   }
-
 
 
   // Stars (for night levels)
@@ -768,7 +771,7 @@ function drawParallaxBackground(
 
   // Layer 2: Mountains (medium speed, factor 0.15)
   const mImg = mountainImgRef.current;
-  if (level !== 8 && mImg && mImg.complete && mImg.naturalWidth > 0) {
+  if (level !== 8 && level !== 9 && mImg && mImg.complete && mImg.naturalWidth > 0) {
     const mtnW = 800;
     const mtnH = 400;
     const mtnSpacing = 900;
@@ -787,7 +790,7 @@ function drawParallaxBackground(
   }
 
   // Layer 1: Trees (fastest, speed factor 0.35)
-  if (level !== 8) {
+  if (level !== 8 && level !== 9) {
   const tImg = treeImgRef.current;
   if (tImg && tImg.complete && tImg.naturalWidth > 0) {
     const aspectRatio = tImg.naturalWidth / tImg.naturalHeight;
@@ -6007,11 +6010,11 @@ export default function Game() {
                 </div>
                 {/* Stars - yellow five-pointed star, clickable for exchange */}
                 <button
-                  className={"flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full transition-all cursor-pointer " + (starPulseStart && Date.now() - starPulseStart < 5000 ? "animate-pulse ring-2 ring-yellow-300" : "") + (gameState.stars >= 3 ? " hover:bg-white/25" : " pointer-events-none")}
+                  className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-full transition-all cursor-pointer ${gameState.stars >= 3 ? 'hover:bg-white/25' : 'pointer-events-none'}`}
                   style={{ background: 'rgba(255,255,255,0.15)' }}
                   onClick={() => { if (gameState.stars >= 3) setShowStarExchange(true); }}
                 >
-                  <img src={assetUrl('assets/star.png')} alt="" className="w-6 h-6 md:w-7 md:h-7 object-contain drop-shadow-sm" />
+                  <img src={assetUrl('assets/star.png')} alt="" className={`w-6 h-6 md:w-7 md:h-7 object-contain drop-shadow-sm ${starPulseStart && Date.now() - starPulseStart < 5000 && gameState.stars >= 3 ? 'animate-star-alert scale-[2]' : ''}`} />
                   <span className="text-white font-bold text-sm md:text-lg" style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>{gameState.stars}</span>
                 </button>
               </div>
@@ -6031,7 +6034,7 @@ export default function Game() {
                   className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
                   style={{ background: 'rgba(255,255,255,0.15)' }}
                   onClick={() => setShowSettingsPanel(prev => !prev)}
-                  title="璁剧疆"
+                  title="设置"
                 >
                   <div className="flex flex-col items-center justify-center gap-[3px] md:gap-[4px]">
                     <div className="w-[5px] h-[5px] md:w-[6px] md:h-[6px] rounded-full bg-white"></div>
@@ -6125,7 +6128,7 @@ export default function Game() {
                   }`}
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}
                 >
-                  纭
+                  确认
                 </button>
                 <button
                   onClick={() => handleStarExchange(false)}
@@ -6703,16 +6706,29 @@ export default function Game() {
           60% { transform: scale(1.3) rotate(20deg); opacity: 1; }
           100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
+        @keyframes starAlert {
+          0%, 100% { transform: scale(1) translate(0, 0) rotate(0deg); }
+          20% { transform: scale(1.18) translate(-1px, 0) rotate(-7deg); }
+          40% { transform: scale(1.22) translate(1px, -1px) rotate(6deg); }
+          60% { transform: scale(1.18) translate(-1px, 1px) rotate(-5deg); }
+          80% { transform: scale(1.22) translate(1px, 0) rotate(5deg); }
+        }
         .animate-cloud-sway-1 { animation: cloud-sway-1 12s ease-in-out infinite; }
         .animate-cloud-sway-2 { animation: cloud-sway-2 16s ease-in-out infinite; }
         .animate-leaf-sway-right { animation: leaf-sway-right 6s ease-in-out infinite; }
         .animate-leaf-sway-left { animation: leaf-sway-left 7s ease-in-out infinite; }
         .animate-tomato-bounce { animation: tomato-bounce 5s ease-in-out infinite; }
+        .animate-star-alert { animation: starAlert 0.7s ease-in-out infinite; transform-origin: center; }
       `}</style>
       </div>
     </div>
   );
 }
+
+
+
+
+
 
 
 

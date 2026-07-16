@@ -1,4 +1,4 @@
-// Runtime configuration
+﻿// Runtime configuration
 let runtimeConfig: {
   API_BASE_URL: string;
 } | null = null;
@@ -14,6 +14,10 @@ const defaultConfig = {
 // Function to load runtime configuration
 export async function loadRuntimeConfig(): Promise<void> {
   try {
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+      configLoading = false;
+      return;
+    }
     console.log('🔧 DEBUG: Starting to load runtime config...');
     // Try to load configuration from a config endpoint
     const response = await fetch('/api/config');
@@ -30,7 +34,7 @@ export async function loadRuntimeConfig(): Promise<void> {
       }
     } else {
       console.log(
-        '🔧 DEBUG: Config fetch failed with status:',
+        '馃敡 DEBUG: Config fetch failed with status:',
         response.status
       );
     }
@@ -39,7 +43,7 @@ export async function loadRuntimeConfig(): Promise<void> {
   } finally {
     configLoading = false;
     console.log(
-      '🔧 DEBUG: Config loading finished, configLoading set to false'
+      '馃敡 DEBUG: Config loading finished, configLoading set to false'
     );
   }
 }
@@ -77,7 +81,7 @@ export function getAPIBaseURL(): string {
   const baseURL = getConfig().API_BASE_URL;
   // If the base URL is just '/', return empty string to avoid double slashes and incorrect http:// prefix
   if (baseURL === '/') {
-    return '';
+    return ''; 
   }
   return baseURL;
 }
@@ -91,3 +95,6 @@ export const config = {
     return getAPIBaseURL();
   },
 };
+
+
+
