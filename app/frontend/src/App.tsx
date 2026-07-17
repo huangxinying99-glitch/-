@@ -1,6 +1,6 @@
-﻿import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import LevelEditor from './pages/LevelEditor';
 import { getBasePath } from './lib/base-path';
@@ -15,9 +15,9 @@ const AppRoutes = () => (
 const App = () => (
   <TooltipProvider>
     <Toaster />
-    <BrowserRouter basename={getBasePath()}>
+    <HashRouter>
       <AppRoutes />
-    </BrowserRouter>
+    </HashRouter>
   </TooltipProvider>
 );
 

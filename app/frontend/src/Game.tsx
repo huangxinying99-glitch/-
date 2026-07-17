@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -50,6 +50,10 @@ function assetUrl(path: string) {
   }
   const base = import.meta.env.BASE_URL || '/';
   return `${base.replace(/\/?$/, '/')}${path.replace(/^\/+/, '')}`;
+}
+
+function isImageReady(img?: HTMLImageElement | null): img is HTMLImageElement {
+  return !!img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
 }
 
 // 閳光偓閳光偓閳光偓 Helper Functions 閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓閳光偓
@@ -1011,7 +1015,7 @@ function drawForegroundFlowers(
     const srcFlower = flowerPositions[0];
     const dstFlower = flowerPositions[3];
 
-    if (srcFlower && dstFlower && (restImg?.complete || bodyImg?.complete)) {
+    if (srcFlower && dstFlower && (isImageReady(restImg) || isImageReady(bodyImg))) {
       const cycleLen = 30000;
       const t = now % cycleLen;
 
@@ -1098,12 +1102,12 @@ function drawForegroundFlowers(
         const wingFlapAngle = Math.sin(now * 0.025) * 0.3;
 
         // Flying layers (bottom to top): body -> wing -> fly
-        if (bodyImg?.complete) {
+        if (isImageReady(bodyImg)) {
           const bw = bodyImg.width;
           const bh = bodyImg.height;
           ctx.drawImage(bodyImg, -bw / 2, -bh / 2, bw, bh);
         }
-        if (wingImg?.complete) {
+        if (isImageReady(wingImg)) {
           ctx.save();
           const ww = wingImg.width;
           const wh = wingImg.height;
@@ -1111,7 +1115,7 @@ function drawForegroundFlowers(
           ctx.drawImage(wingImg, -ww / 2, -wh / 2, ww, wh);
           ctx.restore();
         }
-        if (flyImg?.complete) {
+        if (isImageReady(flyImg)) {
           const fw = flyImg.width;
           const fh = flyImg.height;
           ctx.drawImage(flyImg, -fw / 2, -fh / 2, fw, fh);
@@ -1128,7 +1132,7 @@ function drawForegroundFlowers(
         }
         const breathe = 1 + Math.sin(now * 0.002) * 0.02;
         ctx.scale(breathe, breathe);
-        if (restImg?.complete) {
+        if (isImageReady(restImg)) {
           const rw = restImg.width;
           const rh = restImg.height;
           ctx.drawImage(restImg, -rw / 2, -rh / 2, rw, rh);
@@ -1226,7 +1230,7 @@ function drawForegroundFlowers(
       const wingImg = ladybugWingImgRef?.current;
       const flyImg = ladybugFlyImgRef?.current;
 
-      if (bodyImg && bodyImg.complete && wingImg && wingImg.complete) {
+      if (isImageReady(bodyImg) && isImageReady(wingImg)) {
         // Wing flap animation: oscillate rotation for flapping effect
         const wingFlap = Math.sin(now * 0.025) * 0.4; // smooth flap
         const wingY = Math.sin(now * 0.025) * 3; // vertical bob
@@ -1249,14 +1253,14 @@ function drawForegroundFlowers(
         const bw = bodyImg.width * 1.2;
         const bh = bodyImg.height * 1.2;
         ctx.drawImage(bodyImg, -bw / 2, -bh / 2, bw, bh);
-      } else if (flyImg && flyImg.complete) {
+      } else if (isImageReady(flyImg)) {
         // Fallback: use fly image directly
         ctx.drawImage(flyImg, -ladybugSize / 2, -ladybugSize / 2, ladybugSize, ladybugSize);
       }
     } else {
       // Resting/crawling: use the full ladybug.png (鐡掑娼?
       const restImg = ladybugImgRef?.current;
-      if (restImg && restImg.complete) {
+      if (isImageReady(restImg)) {
         const rw = restImg.width * 1.1;
         const rh = restImg.height * 1.1;
         // Gentle breathing animation when resting
@@ -1272,7 +1276,7 @@ function drawForegroundFlowers(
   // Level 2: Bird flying from bottom-left ground to upper-right, appears immediately on level entry, 3x speed, 30s interval
   if (level === 1) {
     const birdImg = birdDecoImgRef?.current;
-    if (birdImg && birdImg.complete) {
+    if (isImageReady(birdImg)) {
       // Flight takes ~2.7 seconds (tripled speed), then 30s pause
       const flightDuration = 2667;
       const cycleDuration = flightDuration + 30000;
@@ -2060,7 +2064,8 @@ export default function Game() {
         shouldStart = true;
         window.localStorage.removeItem(PREVIEW_LEVEL_STORAGE_KEY);
         if (urlPreview !== null) {
-          window.history.replaceState(null, '', window.location.pathname);
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState(null, '', cleanUrl);
         }
       }
     }
@@ -2076,6 +2081,12 @@ export default function Game() {
     };
   });
 
+  const clearPreviewState = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(PREVIEW_LEVEL_STORAGE_KEY);
+    const cleanUrl = window.location.hash ? `${window.location.pathname}${window.location.hash}` : window.location.pathname;
+    window.history.replaceState(null, '', cleanUrl);
+  }, []);
   // Start BGM when game starts
   useEffect(() => {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.gameWon) {
@@ -2260,7 +2271,7 @@ export default function Game() {
           ctx.globalAlpha = alpha;
           const s1 = sun1Img.current;
           const s2 = sun2Img.current;
-          if (s1 && s1.complete && s2 && s2.complete) {
+          if (isImageReady(s1) && isImageReady(s2)) {
             // Glow behind sun
             const glowRadius = s * 2.5;
             const sunGlow = ctx.createRadialGradient(x, y, s * 0.5, x, y, glowRadius);
@@ -2286,7 +2297,7 @@ export default function Game() {
           } else {
             // Fallback: use single sun image
             const sImg = sunImg.current;
-            if (sImg && sImg.complete) {
+            if (isImageReady(sImg)) {
               const drawSize = s * 2.5;
               ctx.drawImage(sImg, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
             }
@@ -2297,7 +2308,7 @@ export default function Game() {
         const drawMoonImage = (x: number, y: number, s: number, alpha: number) => {
           ctx.globalAlpha = alpha;
           const mImg = moonImg.current;
-          if (mImg && mImg.complete) {
+          if (isImageReady(mImg)) {
             // Soft moon glow
             const moonGlow = ctx.createRadialGradient(x, y, s * 0.3, x, y, s * 2);
             moonGlow.addColorStop(0, `rgba(200,220,255,${0.3 * alpha})`);
@@ -2463,6 +2474,7 @@ export default function Game() {
   const resetGameRef = useRef<(levelIdx?: number) => void>(null as any);
 
   const resetGame = (levelIdx = 0) => {
+    clearPreviewState();
     const level = getPlayableLevel(levelIdx);
     const initialPlayer = createPlayer(level);
     if (levelIdx === 6) {
@@ -2488,7 +2500,7 @@ export default function Game() {
     } else {
       stopWindSound();
     }
-      setGameState(prev => ({
+    setGameState(prev => ({
       ...prev, player: initialPlayer, entities: createEntities(level, false, levelIdx), projectiles: [],
       score: levelIdx === 0 ? 0 : prev.score, coins: levelIdx === 0 ? 0 : prev.coins,
       stars: levelIdx === 0 ? 0 : prev.stars,
@@ -4135,7 +4147,7 @@ export default function Game() {
           const eased = Math.sin(progress * Math.PI);
           const y = animY - eased * bounceHeight;
           ctx.translate(animX + playerWidth / 2, y + playerHeight / 2);
-          if (littleTomatoImg.current && littleTomatoImg.current.complete) {
+          if (isImageReady(littleTomatoImg.current)) {
             ctx.drawImage(littleTomatoImg.current, -playerWidth / 2, -playerHeight / 2, playerWidth, playerHeight);
           } else {
             ctx.fillStyle = '#FF4545';
@@ -4156,7 +4168,7 @@ export default function Game() {
         const fallY = (animY - bounceHeight) + progress * (CANVAS_HEIGHT + 100);
         ctx.translate(animX + playerWidth / 2, fallY + playerHeight / 2);
         ctx.rotate(rotation);
-        if (littleTomatoImg.current && littleTomatoImg.current.complete) {
+        if (isImageReady(littleTomatoImg.current)) {
           ctx.drawImage(littleTomatoImg.current, -playerWidth / 2, -playerHeight / 2, playerWidth, playerHeight);
         } else {
           ctx.fillStyle = '#FF4545';
@@ -4414,7 +4426,7 @@ export default function Game() {
           ctx.restore();
         }
       } else if (e.type === 'pipe') {
-        if (pipeImg.current && pipeImg.current.complete) {
+        if (isImageReady(pipeImg.current)) {
           ctx.save();
           if (e.isCeiling && !e.subWorld) {
             // Flip vertically for ceiling pipe in overworld only
@@ -5003,7 +5015,7 @@ export default function Game() {
             }
           }
           ctx.scale(rabbitScale, rabbitScale);
-          if (rabbitImg.current && rabbitImg.current.complete) {
+          if (isImageReady(rabbitImg.current)) {
             const rabbitDrawW = e.width + 8;
             const rabbitDrawH = e.height + 8;
             ctx.drawImage(rabbitImg.current, -rabbitDrawW / 2, -rabbitDrawH, rabbitDrawW, rabbitDrawH);
@@ -5105,7 +5117,7 @@ export default function Game() {
           ctx.translate(dx + e.width / 2, e.y + e.height / 2);
           if (e.facing === 'left') ctx.scale(-1, 1);
           ctx.rotate(Math.sin(Date.now() * 0.015) * 0.15);
-          if (batImg.current && batImg.current.complete) {
+          if (isImageReady(batImg.current)) {
             ctx.drawImage(batImg.current, -e.width / 2, -e.height / 2, e.width, e.height);
           } else {
             ctx.fillStyle = '#2D1B4E';
@@ -5400,7 +5412,7 @@ export default function Game() {
 
       // Use the same tomato image in both overworld and underground
       const playerImg = littleTomatoImg.current;
-      if (playerImg && playerImg.complete) {
+      if (isImageReady(playerImg)) {
         if (isShooting) {
           // Stretch the tomato image horizontally to simulate mouth protruding forward
           const mouthProgress = shootElapsed < 100 ? shootElapsed / 100 : (250 - shootElapsed) / 150;
@@ -5475,7 +5487,7 @@ export default function Game() {
         ctx.save();
         ctx.translate(pdx + p.width / 2, p.y + p.height / 2);
         ctx.rotate(p.rotation || 0);
-        if (eggImg.current && eggImg.current.complete) {
+        if (isImageReady(eggImg.current)) {
           ctx.drawImage(eggImg.current, -p.width / 2, -p.height / 2, p.width, p.height);
         } else {
           // Fallback: draw egg shape
@@ -6066,7 +6078,7 @@ export default function Game() {
                   {/* Home button - flat house icon, no text */}
                   <button
                     className="w-14 h-14 flex items-center justify-center rounded-2xl hover:bg-gray-100 active:scale-90 transition-all cursor-pointer"
-                    onClick={() => { setShowSettingsPanel(false); setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, gameWon: false })); }}
+                    onClick={() => { clearPreviewState(); setShowSettingsPanel(false); setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, gameWon: false, currentLevel: 0 })); }}
                   >
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                       <path d="M3 12L12 4L21 12" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -6260,7 +6272,7 @@ export default function Game() {
               </button>
               {/* 濮嬫垙 */}
               <button
-                onClick={() => resetGame(0)}
+                onClick={() => { clearPreviewState(); resetGame(0); }}
                 className="relative cursor-pointer hover:scale-110 active:scale-90 transition-all duration-200"
               >
                 <img
@@ -6313,7 +6325,7 @@ export default function Game() {
                       return (
                         <button
                           key={idx}
-                          onClick={() => { setShowLevelSelect(false); resetGame(idx); }}
+                          onClick={() => { clearPreviewState(); setShowLevelSelect(false); resetGame(idx); }}
                           className="relative cursor-pointer hover:translate-y-[-2px] active:translate-y-[3px] transition-all duration-100 mx-auto"
                           style={{
                             width: '58px',
@@ -6425,7 +6437,7 @@ export default function Game() {
                   </svg>
                   重试
                 </button>
-                <button onClick={() => setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false }))}
+                <button onClick={() => { clearPreviewState(); setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, currentLevel: 0 })); }}
                   className="px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all cursor-pointer flex items-center gap-2 shadow-md"
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -6542,7 +6554,7 @@ export default function Game() {
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', background: 'linear-gradient(135deg, #FFD700, #FF8C00)' }}>
                   再来一次
                 </button>
-                <button onClick={() => setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, gameWon: false }))}
+                <button onClick={() => { clearPreviewState(); setGameState(prev => ({ ...prev, gameStarted: false, gameOver: false, gameWon: false, currentLevel: 0 })); }}
                   className="px-6 py-2.5 rounded-xl font-bold text-base text-white hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
                   style={{ fontFamily: '"ZCOOL KuaiLe", sans-serif', background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
                   返回首页
