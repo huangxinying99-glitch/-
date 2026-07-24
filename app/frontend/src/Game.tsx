@@ -5996,7 +5996,7 @@ export default function Game() {
   const handlePointerUp = (key: string) => { touchState.current[key] = false; };
 
   return (
-    <div ref={gameContainerRef} className="fixed inset-0 w-screen h-screen overflow-hidden">
+    <div ref={gameContainerRef} className="game-root fixed inset-0 w-screen h-screen overflow-hidden">
       {isPortrait && (
         <div className="absolute inset-0 z-[999] flex items-center justify-center bg-[#fff8ef] text-center px-6">
           <div className="max-w-sm">
@@ -6012,7 +6012,7 @@ export default function Game() {
       )}
 
       <div
-        className={`relative w-full h-full overflow-hidden bg-gradient-to-b from-[#1a1a3e] via-[#2d1b69] to-[#0f0f2a] select-none touch-none ${isPortrait ? 'hidden' : ''}`}
+        className={`game-viewport relative w-full h-full overflow-hidden bg-gradient-to-b from-[#1a1a3e] via-[#2d1b69] to-[#0f0f2a] select-none touch-none ${isPortrait ? 'hidden' : ''}`}
       >
         {/* HUD - Clean Simple Icon Style */}
         {gameState.gameStarted && !gameState.gameOver && !gameState.gameWon && (
