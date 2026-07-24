@@ -2039,16 +2039,27 @@ export default function Game() {
   }, []);
 
   useEffect(() => {
+    let frame = 0;
     const updateOrientation = () => {
-      const portrait = window.innerHeight > window.innerWidth;
-      setIsPortrait(portrait);
+      // Mobile browsers update the visual viewport one frame after rotation.
+      // Read it on the next frame so landscape mode is not mistaken for portrait.
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const viewport = window.visualViewport;
+        const width = viewport?.width ?? window.innerWidth;
+        const height = viewport?.height ?? window.innerHeight;
+        setIsPortrait(height > width);
+      });
     };
     updateOrientation();
     window.addEventListener('resize', updateOrientation);
     window.addEventListener('orientationchange', updateOrientation);
+    window.visualViewport?.addEventListener('resize', updateOrientation);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener('resize', updateOrientation);
       window.removeEventListener('orientationchange', updateOrientation);
+      window.visualViewport?.removeEventListener('resize', updateOrientation);
     };
   }, []);
 
